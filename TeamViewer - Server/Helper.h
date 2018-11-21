@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <string>
 #include <WinSock2.h>
@@ -14,7 +16,6 @@ enum MessageType : byte
 class Helper
 {
 public:
-
 
 	static int getMessageTypeCode(SOCKET sc);
 	static int getIntPartFromSocket(SOCKET sc, int bytesNum);

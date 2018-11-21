@@ -28,6 +28,7 @@ namespace TeamViewer___Client
             InitializeComponent();
             Thread c = new Thread(serverConnection);
             c.Start();
+            
         }
 
         private void serverConnection()
@@ -39,6 +40,14 @@ namespace TeamViewer___Client
                 IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.LOCAL_HOST), Constants.PORT);
                 client.Connect(serverEndPoint);
                 NetworkStream clientStream = client.GetStream();
+                MSG = "hi";
+                sendMSG();
+                reciveMSG();
+                Label tb= new Label();
+                this.Controls.Add(tb);
+                tb.Top = 50;
+                tb.Left = 15;
+                tb.Text = RecivedMSG;
             }
             catch (Exception exception)
             {
@@ -46,6 +55,33 @@ namespace TeamViewer___Client
                 Application.Exit();
             }
 
+        }
+        public static void sendMSG()
+        {
+            try
+            {
+                clientStream = client.GetStream();
+                byte[] buffer = new ASCIIEncoding().GetBytes(MSG);
+                clientStream.Write(buffer, 0, buffer.Length);
+                clientStream.Flush();
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
+        }
+        private static void reciveMSG()
+        {
+            try
+            {
+                byte[] bufferIn = new byte[4];
+                int bytesRead = clientStream.Read(bufferIn, 0, 15);
+                RecivedMSG = new ASCIIEncoding().GetString(bufferIn);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
         }
     }
 }

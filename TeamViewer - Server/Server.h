@@ -10,9 +10,6 @@
 #include <map>
 #include <vector>
 #include <iostream>
-//#include "DataBase.h"
-//#include "RecievedMessage.h"
-//#include "Validator.h"
 
 using std::cout;
 
@@ -22,6 +19,7 @@ public:
 	Server();
 	~Server();
 	void serve(int port);
+	void clientHandler(SOCKET clientSocket);
 
 private:
 

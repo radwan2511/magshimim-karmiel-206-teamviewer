@@ -1,4 +1,10 @@
 #include "Server.h"
+#include "Helper.h"
+#define SIZE 2 
+#define MSG_BACK "Massage recived"
+
+class Helper;
+
 Server::Server()
 {
 	// notice that we step out to the global namespace
@@ -64,14 +70,28 @@ void Server::accept()
 		throw std::exception(__FUNCTION__);
 
 	cout << "Client accepted. Server and client can speak" << endl;
-	//std::thread *t = new std::thread[200];
-	//// the function that handle the conversation with the clients with threads detached
+	
+	clientHandler(client_socket);
+	//std::thread tr(&Server::clientHandler, this, client_socket);
+	//tr.detach();
 
-	//t[cnt] = std::thread(&TriviaServer::clientHandler, this, client_socket);
-	//cnt++;
-	////detaching
-	//t[cnt - 1].detach();
+}
 
+void Server::clientHandler(SOCKET clientSocket)
+{
+	string data;
 
-
+	while (clientSocket)
+	{
+		try
+		{
+			data = Helper::getStringPartFromSocket(clientSocket, SIZE);
+			cout << data << endl;
+			Helper::sendData(clientSocket, MSG_BACK);
+		}
+		catch (...)
+		{
+			closesocket(clientSocket);
+		}
+	}
 }
