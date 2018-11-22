@@ -43,11 +43,13 @@ namespace TeamViewer___Client
                 MSG = "hi";
                 sendMSG();
                 reciveMSG();
-                Label tb= new Label();
-                this.Controls.Add(tb);
-                tb.Top = 50;
-                tb.Left = 15;
-                tb.Text = RecivedMSG;
+                //Label tb = new Label();
+                //this.Controls.Add(tb);
+                //tb.Top = 50;
+                //tb.Left = 15;
+                //tb.Text = RecivedMSG;
+                label1.Invoke(new Action(() => label1.Text = RecivedMSG));
+                
             }
             catch (Exception exception)
             {
@@ -74,9 +76,10 @@ namespace TeamViewer___Client
         {
             try
             {
-                byte[] bufferIn = new byte[4];
-                int bytesRead = clientStream.Read(bufferIn, 0, 15);
+                byte[] bufferIn = new byte[100];
+                int bytesRead = clientStream.Read(bufferIn, 0, 100);
                 RecivedMSG = new ASCIIEncoding().GetString(bufferIn);
+                RecivedMSG = RecivedMSG.Replace("\0", string.Empty);
             }
             catch (Exception exception)
             {
