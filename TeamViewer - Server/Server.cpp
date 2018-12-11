@@ -1,7 +1,9 @@
 #include "Server.h"
 #include "Helper.h"
-#define SIZE 2 
-#define MSG_BACK "Massage recived"
+
+#define SIZE 1000 
+#define TXT_FILE "text"
+#define DEFAULT_BUFLEN 1024
 
 class Helper;
 
@@ -87,11 +89,16 @@ void Server::clientHandler(SOCKET clientSocket)
 		{
 			data = Helper::getStringPartFromSocket(clientSocket, SIZE);
 			cout << data << endl;
-			Helper::sendData(clientSocket, MSG_BACK);
+			Helper::sendData(clientSocket,data);
 		}
 		catch (...)
 		{
 			closesocket(clientSocket);
 		}
 	}
+}
+
+void Server::SendsTxtFile(SOCKET clientSocket , string text)
+{
+	/**/
 }

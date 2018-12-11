@@ -1,6 +1,6 @@
 ﻿namespace TeamViewer___Client
 {
-    partial class Form1
+    partial class MainScreen
     {
         /// <summary>
         /// Required designer variable.
@@ -28,36 +28,63 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainScreen));
+            this.rdp = new AxMSTSCLib.AxMsTscAxNotSafeForScripting();
+            this.connectButton = new System.Windows.Forms.Button();
+            this.disconnectButton = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.rdp)).BeginInit();
             this.SuspendLayout();
             // 
-            // label1
+            // rdp
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Aharoni", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(315, 208);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(98, 32);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "None";
+            this.rdp.Enabled = true;
+            this.rdp.Location = new System.Drawing.Point(12, 12);
+            this.rdp.Name = "rdp";
+            this.rdp.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("rdp.OcxState")));
+            this.rdp.Size = new System.Drawing.Size(764, 374);
+            this.rdp.TabIndex = 0;
             // 
-            // Form1
+            // connectButton
+            // 
+            this.connectButton.Location = new System.Drawing.Point(177, 403);
+            this.connectButton.Name = "connectButton";
+            this.connectButton.Size = new System.Drawing.Size(174, 42);
+            this.connectButton.TabIndex = 1;
+            this.connectButton.Text = "Connect";
+            this.connectButton.UseVisualStyleBackColor = true;
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
+            // 
+            // disconnectButton
+            // 
+            this.disconnectButton.Location = new System.Drawing.Point(393, 403);
+            this.disconnectButton.Name = "disconnectButton";
+            this.disconnectButton.Size = new System.Drawing.Size(174, 42);
+            this.disconnectButton.TabIndex = 2;
+            this.disconnectButton.Text = "Disconnect";
+            this.disconnectButton.UseVisualStyleBackColor = true;
+            this.disconnectButton.Click += new System.EventHandler(this.disconnectButton_Click);
+            // 
+            // MainScreen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.label1);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Controls.Add(this.disconnectButton);
+            this.Controls.Add(this.connectButton);
+            this.Controls.Add(this.rdp);
+            this.Name = "MainScreen";
+            this.Text = "MainScreen";
+            ((System.ComponentModel.ISupportInitialize)(this.rdp)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Label label1;
+        private AxMSTSCLib.AxMsTscAxNotSafeForScripting rdp;
+        private System.Windows.Forms.Button connectButton;
+        private System.Windows.Forms.Button disconnectButton;
     }
 }
 

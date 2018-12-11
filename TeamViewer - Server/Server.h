@@ -9,7 +9,12 @@
 #include <mutex>
 #include <map>
 #include <vector>
+#include <ws2tcpip.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 using std::cout;
 
@@ -19,12 +24,13 @@ public:
 	Server();
 	~Server();
 	void serve(int port);
-	void clientHandler(SOCKET clientSocket);
 
 private:
 
 	void accept();
-	//void clientHandler(SOCKET clientSocket);
+	void clientHandler(SOCKET clientSocket);
+	void RecivesTxtFile(SOCKET clientSocket);// the function recives a text file from the first client 
+	void SendsTxtFile(SOCKET clientSocket, string text); //the function sends a text file to the second client 
 
 	SOCKET _serverSocket;
 
