@@ -37,17 +37,14 @@ namespace TeamViewer___Client
             try
             {
                 //start the connection
-                client = new TcpClient();
-                IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.LOCAL_HOST), Constants.PORT);
-                client.Connect(serverEndPoint);
-                NetworkStream clientStream = client.GetStream();
-                MSG = "";
-                sendTextFile();
-                reciveTextFile();
+                //client = new TcpClient();
+                //IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.LOCAL_HOST), Constants.PORT);
+                //client.Connect(serverEndPoint);
+                //NetworkStream clientStream = client.GetStream();
+                //MSG = "";
+                //sendTextFile();
+                //reciveTextFile();
                 //label1.Invoke(new Action(() => label1.Text = RecivedMSG));
-                
-
-
             }
             catch (Exception exception)
             {
@@ -127,42 +124,6 @@ namespace TeamViewer___Client
             }
         }
 
-        private void connectButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                //rdp.Server = "magshimim";
-                //rdp.UserName = "Vihorev's Connection";
-
-                
-                
-                rdp.Server = "192.168.0.101"; //adress
-                //rdp.Domain = "localdomain"; //domain
-                rdp.UserName = "test"; //login
-                IMsTscNonScriptable secured = (IMsTscNonScriptable)rdp.GetOcx();
-                secured.ClearTextPassword = "123456";//password
-                rdp.Connect();
-            }
-
-            catch(Exception Ex)
-            {
-                MessageBox.Show("Connection Error!!", Ex.Message , MessageBoxButtons.OK , MessageBoxIcon.Error);
-            }
-        }
-
-        private void disconnectButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if(rdp.Connected.ToString() == "1")
-                {
-                    rdp.Disconnect();
-                }
-            }
-            catch (Exception Ex)
-            {
-                MessageBox.Show("Connection Error!!", Ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+       
     }
 }

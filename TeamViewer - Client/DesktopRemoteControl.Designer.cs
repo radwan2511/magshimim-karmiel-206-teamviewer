@@ -1,6 +1,6 @@
 ﻿namespace TeamViewer___Client
 {
-    partial class MainScreen
+    partial class DesktopRemoteControl
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainScreen));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DesktopRemoteControl));
             this.rdp = new AxMSTSCLib.AxMsTscAxNotSafeForScripting();
             this.connectButton = new System.Windows.Forms.Button();
             this.disconnectButton = new System.Windows.Forms.Button();
@@ -38,43 +38,42 @@
             // rdp
             // 
             this.rdp.Enabled = true;
-            this.rdp.Location = new System.Drawing.Point(12, 12);
+            this.rdp.Location = new System.Drawing.Point(18, 38);
             this.rdp.Name = "rdp";
             this.rdp.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("rdp.OcxState")));
             this.rdp.Size = new System.Drawing.Size(764, 374);
-            this.rdp.TabIndex = 0;
+            this.rdp.TabIndex = 1;
             // 
             // connectButton
             // 
-            this.connectButton.Location = new System.Drawing.Point(177, 403);
+            this.connectButton.Location = new System.Drawing.Point(190, 428);
             this.connectButton.Name = "connectButton";
             this.connectButton.Size = new System.Drawing.Size(174, 42);
-            this.connectButton.TabIndex = 1;
+            this.connectButton.TabIndex = 2;
             this.connectButton.Text = "Connect";
             this.connectButton.UseVisualStyleBackColor = true;
             this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
             // disconnectButton
             // 
-            this.disconnectButton.Location = new System.Drawing.Point(393, 403);
+            this.disconnectButton.Location = new System.Drawing.Point(391, 428);
             this.disconnectButton.Name = "disconnectButton";
             this.disconnectButton.Size = new System.Drawing.Size(174, 42);
-            this.disconnectButton.TabIndex = 2;
+            this.disconnectButton.TabIndex = 3;
             this.disconnectButton.Text = "Disconnect";
             this.disconnectButton.UseVisualStyleBackColor = true;
             this.disconnectButton.Click += new System.EventHandler(this.disconnectButton_Click);
             // 
-            // MainScreen
+            // DesktopRemoteControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 482);
             this.Controls.Add(this.disconnectButton);
             this.Controls.Add(this.connectButton);
             this.Controls.Add(this.rdp);
-            this.Name = "MainScreen";
-            this.Text = "MainScreen";
+            this.Name = "DesktopRemoteControl";
+            this.Text = "DesktopRemoteControl";
             ((System.ComponentModel.ISupportInitialize)(this.rdp)).EndInit();
             this.ResumeLayout(false);
 
@@ -87,4 +86,3 @@
         private System.Windows.Forms.Button disconnectButton;
     }
 }
-
