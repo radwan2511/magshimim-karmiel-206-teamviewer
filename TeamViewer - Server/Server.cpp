@@ -1,5 +1,7 @@
 #include "Server.h"
 #include "Helper.h"
+#include "DataBase.h"
+#include "sqlite3.h"
 
 #define SIZE 1000 
 #define TXT_FILE "text"
@@ -87,9 +89,11 @@ void Server::clientHandler(SOCKET clientSocket)
 	{
 		try
 		{
+			DataBase* db = new DataBase();
 			data = Helper::getStringPartFromSocket(clientSocket, SIZE);
 			cout << data << endl;
 			Helper::sendData(clientSocket,data);
+			system("pause");
 		}
 		catch (...)
 		{
