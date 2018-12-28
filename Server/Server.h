@@ -29,8 +29,8 @@ private:
 
 	void accept();
 	void clientHandler(SOCKET clientSocket);
-	void RecivesTxtFile(SOCKET clientSocket);// the function recives a text file from the first client 
-	void SendsTxtFile(SOCKET clientSocket, string text); //the function sends a text file to the second client 
+	bool handleSignup(string data);
+	bool handleLogIn(string data);
 
 	SOCKET _serverSocket;
 

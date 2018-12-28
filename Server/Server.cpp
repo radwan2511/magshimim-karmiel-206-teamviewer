@@ -6,6 +6,12 @@
 #define SIZE 1000 
 #define TXT_FILE "text"
 #define DEFAULT_BUFLEN 1024
+#define SUCCESS "206"
+#define SIGN_UP "101"
+#define LOG_IN "100"
+#define FAIL "200"
+#define LEN_CHECK 2 
+
 
 class Helper;
 
@@ -76,24 +82,48 @@ void Server::accept()
 	cout << "Client accepted. Server and client can speak" << endl;
 	
 	clientHandler(client_socket);
-	//std::thread tr(&Server::clientHandler, this, client_socket);
-	//tr.detach();
+	std::thread tr(&Server::clientHandler, this, client_socket);
+	tr.detach();
 
 }
 
 void Server::clientHandler(SOCKET clientSocket)
 {
 	string data;
-
+	Helper h;
 	while (clientSocket)
 	{
 		try
 		{
-			DataBase* db = new DataBase();
-			data = Helper::getStringPartFromSocket(clientSocket, SIZE);
+			//DataBase* db = new DataBase();
+			data = h.getStringPartFromSocket(clientSocket, SIZE);
+			data.erase(std::remove(data.begin(), data.end(),'Í'), data.end());
 			cout << data << endl;
-			Helper::sendData(clientSocket,data);
-			system("pause");
+			if (data.substr(0,3) == SIGN_UP)
+			{
+				data = data.substr(3, data.size() - 3);
+				if(handleSignup(data))
+				{
+					data = SUCCESS;
+				}
+				else
+				{
+					data = FAIL;
+				}
+			}
+			else if (data.substr(0, 3) == LOG_IN)
+			{
+				data = data.substr(3, data.size() - 3);
+				if (handleLogIn(data))
+				{
+					data = SUCCESS;
+				}
+				else
+				{
+					data = FAIL;
+				}
+			}
+			Helper::sendData(clientSocket, data);
 		}
 		catch (...)
 		{
@@ -102,7 +132,65 @@ void Server::clientHandler(SOCKET clientSocket)
 	}
 }
 
-void Server::SendsTxtFile(SOCKET clientSocket , string text)
+/*
+The function handles client log in request
+input: RecievedMessage
+output: user
+*/
+bool Server::handleLogIn(string data)
 {
-	/**/
+	DataBase *db = new DataBase();
+	int userLen = atoi((data.substr(0, LEN_CHECK)).c_str());
+	string username = data.substr(LEN_CHECK, userLen);
+	if (db->isUserExists(username))
+	{
+		int passwordLen = atoi((data.substr(LEN_CHECK + userLen, LEN_CHECK)).c_str());
+		string password = data.substr(LEN_CHECK + userLen + LEN_CHECK, passwordLen);
+		if (db->isUserAndPassMatch(username, password))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+/*
+this function handle client sign up request and return bool if could sign up or not
+input: RecievedMessage
+output: bool
+*/
+
+bool Server::handleSignup(string data)
+{
+	DataBase *db = new DataBase();
+	int userLen = atoi((data.substr(0, LEN_CHECK)).c_str());
+	string username = data.substr(LEN_CHECK, userLen);
+	if (db->isUserExists(username))
+	{
+			return false;
+	}
+	else
+	{
+		int passwordLen = atoi((data.substr(LEN_CHECK + userLen, LEN_CHECK)).c_str());
+		string password = data.substr(LEN_CHECK + userLen + LEN_CHECK, passwordLen);
+		int emailLen = atoi((data.substr(LEN_CHECK + userLen + LEN_CHECK + passwordLen, LEN_CHECK)).c_str());
+		string email = data.substr(LEN_CHECK + userLen + LEN_CHECK + passwordLen + LEN_CHECK, emailLen);
+		if(db->addNewUser(username,password,email))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+
 }
