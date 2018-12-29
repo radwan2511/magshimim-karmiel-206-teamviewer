@@ -10,9 +10,10 @@ namespace TeamViewer___Client
     {
         public const string LOCAL_HOST = "127.0.0.1",
         EMPTY = "",
-        SIGNIN = "100",
-        SIGNUP = "101",
-        Fail = "200",
+        LOG_IN = "200",
+        LOG_OUT = "201" ,//NOT USED
+        SIGN_UP = "203",
+        FAIL = "209",
         ZERO = "0",
         SUCCESS = "206",
         MOVE = "102" ,
@@ -29,8 +30,8 @@ namespace TeamViewer___Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new LogInScreen());
-            Application.Run(new DesktopRemoteControl());
+            Application.Run(new LogInScreen());
+            //Application.Run(new DesktopRemoteControl());
         }
     }
 }
