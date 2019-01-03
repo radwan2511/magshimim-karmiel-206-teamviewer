@@ -19,9 +19,6 @@ int Helper::getMessageTypeCode(SOCKET sc)
 	return  res;
 }
 
-
-
-
 // recieve data from socket according byteSize
 // returns the data as int
 int Helper::getIntPartFromSocket(SOCKET sc, int bytesNum)
