@@ -1,11 +1,14 @@
 #include "Server.h"
-#include "Helper.h"
-#include "DataBase.h"
-#include "sqlite3.h"
 
-#define SIZE 1000 
-#define TXT_FILE "text"
-#define DEFAULT_BUFLEN 1024
+using namespace std;
+
+queue<string> myClients;
+std::mutex m;
+int cnt = 0;
+fstream f;
+std::condition_variable con;
+
+string fileData = "";
 
 class Helper;
 
@@ -53,6 +56,9 @@ void Server::serve(int port)
 		throw std::exception(__FUNCTION__ " - listen");
 	cout << "Listening on port " << port << endl;
 
+	// starting the thread to handle the recieved messages
+	thread ts(&Server::handleRecievedMessages, this);
+	ts.detach();
 
 	while (true)
 	{
@@ -75,25 +81,30 @@ void Server::accept()
 
 	cout << "Client accepted. Server and client can speak" << endl;
 	
-	clientHandler(client_socket);
-	//std::thread tr(&Server::clientHandler, this, client_socket);
-	//tr.detach();
+	std::thread tr(&Server::clientHandler, this, client_socket);
+	tr.detach();
 
 }
 
 void Server::clientHandler(SOCKET clientSocket)
 {
+	int MTC = 0;
+	string n = "";
 	string data;
+	string st;
+	string currUser;
+	string nextUser;
+	queue<string> temp;
+	std::unique_lock<std::mutex> fLock(m, defer_lock);
 
 	while (clientSocket)
 	{
 		try
 		{
-			DataBase* db = new DataBase();
-			data = Helper::getStringPartFromSocket(clientSocket, SIZE);
-			cout << data << endl;
-			Helper::sendData(clientSocket,data);
-			system("pause");
+			MTC = Helper::getMessageTypeCode(clientSocket);
+			RecievedMessage* rcv = new RecievedMessage(clientSocket, MTC);
+			addRecievedMessage(rcv);
+
 		}
 		catch (...)
 		{
@@ -102,7 +113,340 @@ void Server::clientHandler(SOCKET clientSocket)
 	}
 }
 
-void Server::SendsTxtFile(SOCKET clientSocket , string text)
+/*
+The function handles client log in request
+input: RecievedMessage
+output: user
+*/
+bool Server::handleLogIn(RecievedMessage * msg)
 {
-	/**/
+	vector<string> vec = msg->getValues();
+	User* newUser = nullptr;
+	if (this->_db.isUserAndPassMatch(vec[0], vec[1]))
+	{
+		newUser = getUserByName(vec[0]);
+		if (newUser == nullptr)
+		{
+			Helper::sendData(msg->getSock(), "206");
+			newUser = new User(vec[0], msg->getSock());
+			this->_connectedUsers.emplace(msg->getSock(), newUser);
+			msg->setUser(newUser);
+		}
+		else
+		{
+			Helper::sendData(msg->getSock(), "209");
+		}
+	}
+	else
+	{
+		Helper::sendData(msg->getSock(), "209");
+	}
+
+	return newUser;
 }
+
+/*
+this function handle client sign up request and return bool if could sign up or not
+input: RecievedMessage
+output: bool
+*/
+
+bool Server::handleSignUp(RecievedMessage * msg)
+{
+	vector<string> vec = msg->getValues();
+	if (Validator::isUsernameValid(vec[0]))
+	{
+		if (Validator::isPasswordValid(vec[1]))
+		{
+			if (!this->_db.isUserExists(vec[0]))
+			{
+				this->_db.addNewUser(vec[0], vec[1], vec[2]);
+				Helper::sendData(msg->getSock(), "206"); // sends a success that the user signed up
+				return true;
+			}
+			else
+			{
+				Helper::sendData(msg->getSock(), "209");//sends a failure that the user is'nt exists
+			}
+		}
+		else
+		{
+			Helper::sendData(msg->getSock(), "1041");//sends a failure 
+		}
+	}
+	else
+	{
+		Helper::sendData(msg->getSock(), "1043");
+	}
+	return false;
+
+}
+
+/*
+The fucntion returns user by name 
+input: name - the name of the user
+output: *User - the user of the requested name
+*/
+User * Server::getUserByName(string name)
+{
+	for (auto& x : _connectedUsers)
+	{
+		if (x.second->getUsername() == name)
+		{
+			return x.second;
+		}
+	}
+	return nullptr;
+}
+
+/*
+The function builds the recevid message
+input: Socket - the socket of the client that massage was recived 
+	   messageCode - the recived massage from the client
+output: RecievedMessage - the built massage 
+*/
+RecievedMessage * Server::buildRecievedMessage(SOCKET socket, int messageCode)
+{
+	return new RecievedMessage(socket, messageCode);
+}
+
+/*
+The fucntion handles the recived massages from the clients
+input: void
+output: void
+*/
+void Server::handleRecievedMessages()
+{
+	//SOCKET saved ;
+	std::unique_lock<std::mutex> locker(_mtxRecievedMessages);
+	static Room *saved = NULL;
+	while (true)
+	{
+		if (_queRcvMessages.empty())
+		{
+			_cond.wait(locker);
+		}
+		switch (_queRcvMessages.front()->getMessageCode())
+		{
+		case LOG_IN:
+			handleLogIn(_queRcvMessages.front());
+			cout << _queRcvMessages.front()->getUser()->getUsername() <<" signed in!" << endl;
+			break;
+		case SIGN_OUT:
+			handleSignOut(_queRcvMessages.front());
+			cout << _queRcvMessages.front()->getUser()->getUsername() <<" Logged Out!!!" << endl;
+			break;
+		case SIGN_UP:
+			handleSignUp(_queRcvMessages.front());
+			cout << "We got a new user :D" << endl;
+			break;
+		case ROOM_JOIN:
+			//handleJoinRoom(_queRcvMessages.front());
+			//cout << _queRcvMessages.front()->getUser()->getUsername() << " joined the room!" << endl;
+			Helper::sendData(_queRcvMessages.front()->getSock(), "206");
+			saved = _queRcvMessages.front()->getUser()->getRoom();
+			handleControl(saved, _queRcvMessages.front());
+			break;
+		case ROOM_LEAVE:
+			handleLeaveRoom(_queRcvMessages.front());
+			break;
+		case ROOM_CREATE:
+			handleCreateRoom(_queRcvMessages.front());
+			cout << _queRcvMessages.front()->getUser()->getUsername() << "created a room"<< endl;
+			cout << "Room number is - " <<  _queRcvMessages.front()->getUser()->getRoom()->getId() << endl;
+			cout << "Room type is - " << _queRcvMessages.front()->getUser()->getRoom()->getType() << endl;
+			cout << "Room max users count is -" << _queRcvMessages.front()->getUser()->getRoom()->getMaxUsers() << endl;
+			saved = _queRcvMessages.front()->getUser()->getRoom();
+			handleControl(saved, _queRcvMessages.front());
+			break;
+		case MOUSE_MOVE:
+			handleControl(saved,_queRcvMessages.front());
+			break;
+		default:
+			handleSignOut(_queRcvMessages.front());
+			cout << _queRcvMessages.front()->getUser()->getUsername() << "Signed out !!" << endl;
+			break;		
+		}
+		_queRcvMessages.pop();
+	}
+}
+
+/*
+The function adds the recevid message to the reseved message queue and notfy the recevid message handler
+input: recived message
+output: void
+*/
+void Server::addRecievedMessage(RecievedMessage * rcvMessage)
+{
+	//_queRcvMessages.push(rcvMessage);
+
+	std::unique_lock<std::mutex> locker(_mtxRecievedMessages);
+	rcvMessage->setUser(getUserBySocket(rcvMessage->getSock()));
+	//locker.lock();
+	_queRcvMessages.push(rcvMessage);
+	locker.unlock();
+	_cond.notify_one();
+
+
+}
+
+/*
+return user by socket
+input: socket
+output: user
+*/
+User * Server::getUserBySocket(SOCKET socket)
+{
+	for (auto& x : this->_connectedUsers)
+	{
+		if (x.first == socket)
+		{
+			return x.second;
+		}
+	}
+	return nullptr;
+}
+
+/*
+this function create room by the client request
+input: RecievedMessage
+output: bool
+*/
+bool Server::handleCreateRoom(RecievedMessage * msg)
+{
+	User* user = msg->getUser();
+	vector<string> vec = msg->getValues();
+	if (user != nullptr)
+	{
+		if (user->createRoom(_roomIdSequence, vec[0], stoi(vec[1]) ))
+		{
+			this->_roomList.emplace(_roomIdSequence, user->getRoom());
+			_roomIdSequence++;
+			return true;
+		}
+	}
+	return false;
+}
+
+/*
+this function close the room
+input: RecievedMessage
+output: bool
+*/
+bool Server::handleCloseRoom(RecievedMessage * msg)
+{
+	User* user = msg->getUser();
+	int roomId = user->closeRoom();
+	if (roomId != -1)
+	{
+		this->_roomList.erase(roomId);
+		this->_roomIdSequence--;
+		return true;
+	}
+	return false;
+}
+
+/*
+this function handle the client join room request and return if it worked
+input: RecievedMessage
+output: bool
+*/
+bool Server::handleJoinRoom(RecievedMessage * msg)
+{
+	User* user = msg->getUser();
+	int roomId = stoi(msg->getValues()[0]);
+	Room* room = getRoomById(roomId);
+	if (user != nullptr)
+	{
+		if (room != nullptr)
+		{
+			if (room->getMaxUsers() > (int)room->getUsers().size())
+			{
+				user->joinRoom(room);
+				return room->joinRoom(user);
+			}
+			else
+			{
+				Helper::sendData(msg->getSock(), "1101");
+				return false;
+			}
+		}
+	}
+	Helper::sendData(msg->getSock(), "1102");
+	return false;
+}
+
+/*
+return the room by id
+input: id
+output: room
+*/
+Room * Server::getRoomById(int id)
+{
+	return this->_roomList[id];
+}
+
+void Server::handleControl(Room* saved, RecievedMessage * msg)
+{
+	//string data;
+	vector<User*> u ;
+	//get the values into a new vector for easier use 
+	for (int i = 0; i<saved->getUsers().size(); i++)
+		u.push_back((saved->getUsers())[i]);
+	auto s = u[0]->getSocket();
+	//u.emplace_back(s);
+
+
+	
+	// send for admin (user 1) users 2 ip
+	string adminIp;
+	if (u.size() == 1)
+	{
+		Helper::sendData(u[0]->getSocket(),"admin");
+		cout << "only one client connected " << endl;
+	}
+
+
+	if (u.size() == 2)
+	{
+		Helper::sendData(u[1]->getSocket(), "reciver");
+		adminIp = "127.0.0.1";//Helper::getStringPartFromSocket(u[1]->getSocket(), 15);
+		Helper::sendData(u[0]->getSocket(), adminIp);
+		cout << "Two clients connected !!!" << endl;
+
+	}
+	
+}
+
+/*
+this function will sign out the client
+input : received message
+output: void
+*/
+void Server::handleSignOut(RecievedMessage * msg)
+{
+	if (msg->getUser() != nullptr)
+	{
+		this->_connectedUsers.erase(msg->getSock());
+
+		if (msg->getUser()->getRoom() != nullptr)
+		{
+			handleCloseRoom(msg);
+		}
+		handleLeaveRoom(msg);
+	}
+
+}
+
+/*
+this function handle the client leave room request and return if it worked
+input: RecievedMessage
+output: bool
+*/
+bool Server::handleLeaveRoom(RecievedMessage * msg)
+{
+	User* user = msg->getUser();
+	user->leaveRoom();
+	return true;
+}
+
