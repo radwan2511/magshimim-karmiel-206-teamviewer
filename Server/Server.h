@@ -71,7 +71,7 @@ public:
 	Room * getRoomById(int id);
 	//make a check if the room exists
 	//controlling
-	void handleControl(Room *saved, RecievedMessage * msg);//220
+	void handleControl(RecievedMessage * msg);//220
 
 private:
 
@@ -79,6 +79,7 @@ private:
 	void clientHandler(SOCKET clientSocket);
 
 	map<SOCKET, User*> _connectedUsers;
+	vector<SOCKET> _users;
 	map<int, Room*> _roomList;
 	mutex _mtxRecievedMessages;
 	queue<RecievedMessage*> _queRcvMessages;

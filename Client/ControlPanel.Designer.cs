@@ -55,7 +55,7 @@
             this.move.TabIndex = 1;
             this.move.Text = "Move";
             this.move.UseVisualStyleBackColor = true;
-            this.move.Click += new System.EventHandler(this.move_Click);
+            //this.move.Click += new System.EventHandler(this.move_Click);
             // 
             // XNumbers
             // 
@@ -92,7 +92,7 @@
             this.clickbutton.TabIndex = 5;
             this.clickbutton.Text = "Click";
             this.clickbutton.UseVisualStyleBackColor = true;
-            this.clickbutton.Click += new System.EventHandler(this.clickbutton_Click);
+            
             // 
             // ControlPanel
             // 

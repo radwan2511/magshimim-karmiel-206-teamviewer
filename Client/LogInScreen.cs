@@ -19,14 +19,16 @@ namespace TeamViewer___Client
     {
         public static string MSG { get; set; }
         public static string RecivedMSG { get; set; }
-        public static TcpClient client;
-        public static NetworkStream clientStream;
-        public static IPEndPoint serverEndPoint;
-        public static NetworkStream clientStream2;
+        public static TcpClient client { get; set; }
+        public static NetworkStream clientStream { get; set; }
+        public static IPEndPoint serverEndPoint { get; set; }
+        public static NetworkStream clientStream2 { get; set; }
+        public static TcpClient client3 { get; set; }
         public static byte[] key { get; set; }
         public LogInScreen()
         {
             InitializeComponent();
+            Init_Data();
             Thread c = new Thread(serverConnection);
             c.Start();
 
@@ -130,11 +132,11 @@ namespace TeamViewer___Client
         {
             try
             {
-                if(usernameBox.Text != "" || passwordBox.Text != "" )
+                if(usernameBox.Text != string.Empty || passwordBox.Text != string.Empty)
                 {
                     string pass = passwordBox.Text;
 
-                    errorLabel.Invoke(new Action(() => errorLabel.Text = Constants.EMPTY));
+                    errorLabel.Invoke(new Action(() => errorLabel.Text = string.Empty));
 
                     string uLen = (usernameBox.Text.Length < 10) ? Constants.ZERO + usernameBox.Text.Length.ToString() : usernameBox.Text.Length.ToString();
                     string pLen = (pass.Length < 10) ? Constants.ZERO + pass.Length.ToString() : pass.Length.ToString();
@@ -143,6 +145,7 @@ namespace TeamViewer___Client
                     msgHandler();
                     if (RecivedMSG == Constants.SUCCESS)
                     {
+                        save_data();
                         this.Hide();
                         Form Main = new MainScreen();
                         Main.ShowDialog();
@@ -169,9 +172,38 @@ namespace TeamViewer___Client
             this.Show();
         }
 
-        private void LogInScreen_Load(object sender, EventArgs e)
+        private void Init_Data()
         {
+            if(Properties.Settings.Default.Username != string.Empty)
+            {
+                if (Properties.Settings.Default.Remember == "yes")
+                {
+                    usernameBox.Text = Properties.Settings.Default.Username;
+                    passwordBox.Text = Properties.Settings.Default.Password;
+                }
+                else
+                {
+                    usernameBox.Text = Properties.Settings.Default.Username;
+                }
+            }
+        }
 
+        private void save_data()
+        {
+            if (remeberBox.Checked)
+            {
+                Properties.Settings.Default.Username = usernameBox.Text;
+                Properties.Settings.Default.Password = passwordBox.Text;
+                Properties.Settings.Default.Remember = "yes";
+                Properties.Settings.Default.Save();
+            }
+            else
+            {
+                Properties.Settings.Default.Username = usernameBox.Text;
+                Properties.Settings.Default.Password = "";
+                Properties.Settings.Default.Remember = "no";
+                Properties.Settings.Default.Save();
+            }
         }
     }
 }

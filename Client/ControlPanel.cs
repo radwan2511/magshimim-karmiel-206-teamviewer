@@ -22,13 +22,13 @@ namespace TeamViewer___Client
 {
     public partial class ControlPanel : Form
     {
-        public static TcpClient client3 { get; set; }
-        public static TcpListener listener { get; set; }
-
+        //public static TcpClient client;
+        //private PictureBox pictureBox2;
+        //public static NetworkStream clientStream;
 
         public static int x { get; set; }
         public static int y { get; set; }
-        public static string Massage { get; set; }
+
 
         public ControlPanel()
         {
@@ -42,23 +42,31 @@ namespace TeamViewer___Client
         {
             try
             {
+
                 /////////////////////////////////////////
                 byte[] b = new byte[100];
                 //start the connection
-                /*LogInScreen.client = new TcpClient();
-                LogInScreen.serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.LOCAL_HOST), Constants.PORT);
-                LogInScreen.client.Connect(LogInScreen.serverEndPoint);
-                LogInScreen.clientStream = client.GetStream();*/
+                //client = new TcpClient();
+                //IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.LOCAL_HOST), Constants.PORT);
+                //client.Connect(serverEndPoint);
+                LogInScreen.clientStream = LogInScreen.client.GetStream();
 
                 LogInScreen.clientStream.Read(b, 0, 100);
                 System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
 
                 string result = enc.GetString(b);
-                
+
+                //int port = 13000;
+
+                // string hostName = Dns.GetHostName();
+                //string myIP = Dns.GetHostByName(hostName).AddressList[0].ToString();
+
                 string st = "aa";
                 string iip = "";
                 while (result[0] == 'a')
                 {
+                    //clientStream.Write(Encoding.ASCII.GetBytes(myIP),0,myIP.Length);
+
                     LogInScreen.clientStream.Read(b, 0, 16);
                     st = enc.GetString(b);
                     int i = 0;
@@ -70,18 +78,17 @@ namespace TeamViewer___Client
                     }
 
                     TcpClient cl = new TcpClient();
-                    LogInScreen.client.Connect(iip, Constants.CLIENT_PORT);
-                   
+                    cl.Connect(iip, 8000);
+                    NetworkStream clientStream2;
                     while (1 == 1)
                     {
                         try
                         {
-                            //ControlPanel.Massage = XNumbers.Text + YNumbers.Text;
-                            ControlPanel.Massage = "500900";
+                            string massage = "210140{H}";
                             //sending the mouse coordinates
                             BinaryFormatter binFormatter = new BinaryFormatter();
-                            LogInScreen.clientStream2 = cl.GetStream();
-                            binFormatter.Serialize(LogInScreen.clientStream2, ControlPanel.Massage);
+                            clientStream2 = cl.GetStream();
+                            binFormatter.Serialize(clientStream2, massage);
                         }
                         catch (Exception exception)
                         {
@@ -96,8 +103,6 @@ namespace TeamViewer___Client
 
                 string hostName = Dns.GetHostName();
                 string myIP = Dns.GetHostByName(hostName).AddressList[0].ToString();
-                
-                
 
 
                 while (result[0] == 'r')
@@ -105,8 +110,8 @@ namespace TeamViewer___Client
                     LogInScreen.clientStream.Write(Encoding.ASCII.GetBytes(myIP), 0, myIP.Length);
 
 
-                    client3 = new TcpClient();
-                    listener = new TcpListener(Constants.CLIENT_PORT);
+                    TcpClient client3 = new TcpClient();
+                    TcpListener listener = new TcpListener(8000); //crashes and tells that only one port connection is premitted
                     listener.Start();
                     //---get the incoming data through a network stream---
                     NetworkStream ImageStream;
@@ -128,9 +133,14 @@ namespace TeamViewer___Client
                     {
                         ImageStream = client3.GetStream();
                         newOne = (string)binFormatter.Deserialize(ImageStream);
-                        update(newOne.Substring(0, 3), newOne.Substring(0, 3));
+                        update(newOne.Substring(0, 3), newOne.Substring(3, 3));
                         movment();
                         //label1.Invoke(new Action(() => label1.Text = newOne));
+                        click();
+                        SendKeys.SendWait(newOne.Substring(6, 3));
+                        //SendKeys.SendWait("^%{DEL}");
+                        //SendKeys.SendWait("{%}");
+                        //SendKeys.SendWait("(DEL)");
                     }
 
 
@@ -167,20 +177,13 @@ namespace TeamViewer___Client
         public void update(string recived_x, string recived_y)
         {
             ControlPanel.x = Int32.Parse(recived_x);
-            ControlPanel.x = Int32.Parse(recived_y);
+            ControlPanel.y = Int32.Parse(recived_y);
         }
 
-        private void move_Click(object sender, EventArgs e)
-        {/*
-            ControlPanel.Massage = "500900";
-            //sending the mouse coordinates
-            BinaryFormatter binFormatter = new BinaryFormatter();
-            clientStream2 = cl.GetStream();
-            binFormatter.Serialize(clientStream2, ControlPanel.Massage);*/
-        }
-        private void clickbutton_Click(object sender, EventArgs e)
+        public void click()
         {
-            ;
+            mouse_event(MOUSEEVENTF_LEFTDOWN, ControlPanel.x, ControlPanel.y, 0, 0);
+            mouse_event(MOUSEEVENTF_LEFTUP, ControlPanel.x, ControlPanel.y, 0, 0);
         }
     }
 }

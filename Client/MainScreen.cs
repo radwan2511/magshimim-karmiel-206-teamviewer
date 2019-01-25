@@ -94,7 +94,7 @@ namespace TeamViewer___Client
             if (LogInScreen.RecivedMSG == Constants.SUCCESS)
             {
                 this.Hide();
-                Form give = new GiveControl();
+                Form give = new ControlPanel();
                 give.ShowDialog();
                 this.Show();
             }

@@ -26,7 +26,7 @@ namespace TeamViewer___Client
                 if (userText.Text != null && passText.Text != null && emailText != null)
                 {
                     string password = passText.Text;
-                    erorrLabel.Text = Constants.EMPTY;
+                    erorrLabel.Text = string.Empty;
                     string uLen = userText.Text.Length.ToString();
                     string pLen = password.Length.ToString();
                     string eLen = emailText.Text.Length.ToString();

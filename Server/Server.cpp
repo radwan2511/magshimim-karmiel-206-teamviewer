@@ -219,7 +219,6 @@ void Server::handleRecievedMessages()
 {
 	//SOCKET saved ;
 	std::unique_lock<std::mutex> locker(_mtxRecievedMessages);
-	static Room *saved = NULL;
 	while (true)
 	{
 		if (_queRcvMessages.empty())
@@ -242,25 +241,24 @@ void Server::handleRecievedMessages()
 			break;
 		case ROOM_JOIN:
 			//handleJoinRoom(_queRcvMessages.front());
-			//cout << _queRcvMessages.front()->getUser()->getUsername() << " joined the room!" << endl;
+			cout << _queRcvMessages.front()->getUser()->getUsername() << " joined the room!" << endl;
 			Helper::sendData(_queRcvMessages.front()->getSock(), "206");
-			saved = _queRcvMessages.front()->getUser()->getRoom();
-			handleControl(saved, _queRcvMessages.front());
+			handleControl(_queRcvMessages.front());
 			break;
 		case ROOM_LEAVE:
 			handleLeaveRoom(_queRcvMessages.front());
 			break;
 		case ROOM_CREATE:
-			handleCreateRoom(_queRcvMessages.front());
+			//handleCreateRoom(_queRcvMessages.front());
 			cout << _queRcvMessages.front()->getUser()->getUsername() << "created a room"<< endl;
-			cout << "Room number is - " <<  _queRcvMessages.front()->getUser()->getRoom()->getId() << endl;
-			cout << "Room type is - " << _queRcvMessages.front()->getUser()->getRoom()->getType() << endl;
-			cout << "Room max users count is -" << _queRcvMessages.front()->getUser()->getRoom()->getMaxUsers() << endl;
-			saved = _queRcvMessages.front()->getUser()->getRoom();
-			handleControl(saved, _queRcvMessages.front());
+			//cout << "Room number is - " <<  _queRcvMessages.front()->getUser()->getRoom()->getId() << endl;
+			//cout << "Room type is - " << _queRcvMessages.front()->getUser()->getRoom()->getType() << endl;
+			//cout << "Room max users count is -" << _queRcvMessages.front()->getUser()->getRoom()->getMaxUsers() << endl;
+			Helper::sendData(_queRcvMessages.front()->getSock(), "206");
+			handleControl(_queRcvMessages.front());
 			break;
 		case MOUSE_MOVE:
-			handleControl(saved,_queRcvMessages.front());
+			handleControl(_queRcvMessages.front());
 			break;
 		default:
 			handleSignOut(_queRcvMessages.front());
@@ -363,6 +361,7 @@ bool Server::handleJoinRoom(RecievedMessage * msg)
 			if (room->getMaxUsers() > (int)room->getUsers().size())
 			{
 				user->joinRoom(room);
+				Helper::sendData(msg->getSock(), "206");
 				return room->joinRoom(user);
 			}
 			else
@@ -386,32 +385,28 @@ Room * Server::getRoomById(int id)
 	return this->_roomList[id];
 }
 
-void Server::handleControl(Room* saved, RecievedMessage * msg)
+void Server::handleControl(RecievedMessage * msg)
 {
 	//string data;
-	vector<User*> u ;
-	//get the values into a new vector for easier use 
-	for (int i = 0; i<saved->getUsers().size(); i++)
-		u.push_back((saved->getUsers())[i]);
-	auto s = u[0]->getSocket();
-	//u.emplace_back(s);
+
+	_users.emplace_back(msg->getSock());
 
 
 	
 	// send for admin (user 1) users 2 ip
 	string adminIp;
-	if (u.size() == 1)
+	if (_users.size() == 1)
 	{
-		Helper::sendData(u[0]->getSocket(),"admin");
+		Helper::sendData(_users[0],"admin");
 		cout << "only one client connected " << endl;
 	}
 
 
-	if (u.size() == 2)
+	if (_users.size() == 2)
 	{
-		Helper::sendData(u[1]->getSocket(), "reciver");
-		adminIp = "127.0.0.1";//Helper::getStringPartFromSocket(u[1]->getSocket(), 15);
-		Helper::sendData(u[0]->getSocket(), adminIp);
+		Helper::sendData(_users[1], "reciver");
+		adminIp = "192.168.1.91";//Helper::getStringPartFromSocket(_users[1], 15);
+		Helper::sendData(_users[0], adminIp);
 		cout << "Two clients connected !!!" << endl;
 
 	}

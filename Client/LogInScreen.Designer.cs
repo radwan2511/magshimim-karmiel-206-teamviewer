@@ -103,7 +103,7 @@
             // 
             this.remeberBox.AutoSize = true;
             this.remeberBox.Font = new System.Drawing.Font("Comic Sans MS", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.remeberBox.Location = new System.Drawing.Point(31, 251);
+            this.remeberBox.Location = new System.Drawing.Point(17, 254);
             this.remeberBox.Name = "remeberBox";
             this.remeberBox.Size = new System.Drawing.Size(97, 19);
             this.remeberBox.TabIndex = 7;
@@ -173,7 +173,6 @@
             this.Controls.Add(this.usernameBox);
             this.Controls.Add(this.usernameLabel);
             this.Name = "LogInScreen";
-            this.Load += new System.EventHandler(this.LogInScreen_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -9,7 +9,6 @@ namespace TeamViewer___Client
     static class Constants // defines
     {
         public const string LOCAL_HOST = "127.0.0.1",
-        EMPTY = "",
         LOG_IN = "200",
         LOG_OUT = "201",//NOT USED
         SIGN_UP = "203",
@@ -21,8 +20,7 @@ namespace TeamViewer___Client
         CREATE_ROOM = "213",
         JOIN_ROOM = "209";
         public const int PORT = 8820,
-        CLIENT_PORT = 13000,
-        P2P_PORT = 500;
+        CLIENT_PORT = 8000;
     }
         static class Program
     {
