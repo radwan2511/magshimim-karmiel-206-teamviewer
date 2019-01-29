@@ -239,30 +239,9 @@ void Server::handleRecievedMessages()
 			handleSignUp(_queRcvMessages.front());
 			cout << "We got a new user :D" << endl;
 			break;
-		case ROOM_JOIN:
-			//handleJoinRoom(_queRcvMessages.front());
-			cout << _queRcvMessages.front()->getUser()->getUsername() << " joined the room!" << endl;
-			Helper::sendData(_queRcvMessages.front()->getSock(), "206");
-			handleControl(_queRcvMessages.front());
-			break;
-		case ROOM_LEAVE:
-			handleLeaveRoom(_queRcvMessages.front());
-			break;
-		case ROOM_CREATE:
-			//handleCreateRoom(_queRcvMessages.front());
-			cout << _queRcvMessages.front()->getUser()->getUsername() << "created a room"<< endl;
-			//cout << "Room number is - " <<  _queRcvMessages.front()->getUser()->getRoom()->getId() << endl;
-			//cout << "Room type is - " << _queRcvMessages.front()->getUser()->getRoom()->getType() << endl;
-			//cout << "Room max users count is -" << _queRcvMessages.front()->getUser()->getRoom()->getMaxUsers() << endl;
-			Helper::sendData(_queRcvMessages.front()->getSock(), "206");
-			handleControl(_queRcvMessages.front());
-			break;
-		case MOUSE_MOVE:
-			handleControl(_queRcvMessages.front());
-			break;
 		default:
 			handleSignOut(_queRcvMessages.front());
-			cout << _queRcvMessages.front()->getUser()->getUsername() << "Signed out !!" << endl;
+			//cout << _queRcvMessages.front()->getUser()->getUsername() << "Signed out !!" << endl;
 			break;		
 		}
 		_queRcvMessages.pop();
@@ -305,113 +284,36 @@ User * Server::getUserBySocket(SOCKET socket)
 	return nullptr;
 }
 
-/*
-this function create room by the client request
-input: RecievedMessage
-output: bool
-*/
-bool Server::handleCreateRoom(RecievedMessage * msg)
-{
-	User* user = msg->getUser();
-	vector<string> vec = msg->getValues();
-	if (user != nullptr)
-	{
-		if (user->createRoom(_roomIdSequence, vec[0], stoi(vec[1]) ))
-		{
-			this->_roomList.emplace(_roomIdSequence, user->getRoom());
-			_roomIdSequence++;
-			return true;
-		}
-	}
-	return false;
-}
-
-/*
-this function close the room
-input: RecievedMessage
-output: bool
-*/
-bool Server::handleCloseRoom(RecievedMessage * msg)
-{
-	User* user = msg->getUser();
-	int roomId = user->closeRoom();
-	if (roomId != -1)
-	{
-		this->_roomList.erase(roomId);
-		this->_roomIdSequence--;
-		return true;
-	}
-	return false;
-}
-
-/*
-this function handle the client join room request and return if it worked
-input: RecievedMessage
-output: bool
-*/
-bool Server::handleJoinRoom(RecievedMessage * msg)
-{
-	User* user = msg->getUser();
-	int roomId = stoi(msg->getValues()[0]);
-	Room* room = getRoomById(roomId);
-	if (user != nullptr)
-	{
-		if (room != nullptr)
-		{
-			if (room->getMaxUsers() > (int)room->getUsers().size())
-			{
-				user->joinRoom(room);
-				Helper::sendData(msg->getSock(), "206");
-				return room->joinRoom(user);
-			}
-			else
-			{
-				Helper::sendData(msg->getSock(), "1101");
-				return false;
-			}
-		}
-	}
-	Helper::sendData(msg->getSock(), "1102");
-	return false;
-}
-
-/*
-return the room by id
-input: id
-output: room
-*/
-Room * Server::getRoomById(int id)
-{
-	return this->_roomList[id];
-}
-
-void Server::handleControl(RecievedMessage * msg)
-{
-	//string data;
-
-	_users.emplace_back(msg->getSock());
 
 
-	
-	// send for admin (user 1) users 2 ip
-	string adminIp;
-	if (_users.size() == 1)
-	{
-		Helper::sendData(_users[0],"admin");
-		cout << "only one client connected " << endl;
-	}
 
-
-	if (_users.size() == 2)
-	{
-		Helper::sendData(_users[1], "reciver");
-		adminIp = "192.168.1.91";//Helper::getStringPartFromSocket(_users[1], 15);
-		Helper::sendData(_users[0], adminIp);
-		cout << "Two clients connected !!!" << endl;
-
-	}
-	
-}
+//void Server::handleControl(RecievedMessage * msg)
+//{
+//	//string data;
+//
+//	_users.emplace_back(msg->getSock());
+//
+//
+//	
+//	// send for admin (user 1) users 2 ip
+//	string adminIp;
+//	if (_users.size() == 1)
+//	{
+//		Helper::sendData(_users[0],"admin");
+//		cout << "only one client connected " << endl;
+//	}
+//
+//
+//	if (_users.size() == 2)
+//	{
+//		Helper::sendData(_users[1], "reciver");
+//		//adminIp = "192.168.1.91";//Helper::getStringPartFromSocket(_users[1], 15);
+//		Helper::sendData(_users[0], adminIp);
+//		cout << "Two clients connected !!!" << endl;
+//
+//	}
+//	
+//}
 
 /*
 this function will sign out the client
@@ -423,25 +325,7 @@ void Server::handleSignOut(RecievedMessage * msg)
 	if (msg->getUser() != nullptr)
 	{
 		this->_connectedUsers.erase(msg->getSock());
-
-		if (msg->getUser()->getRoom() != nullptr)
-		{
-			handleCloseRoom(msg);
-		}
-		handleLeaveRoom(msg);
 	}
 
-}
-
-/*
-this function handle the client leave room request and return if it worked
-input: RecievedMessage
-output: bool
-*/
-bool Server::handleLeaveRoom(RecievedMessage * msg)
-{
-	User* user = msg->getUser();
-	user->leaveRoom();
-	return true;
 }
 

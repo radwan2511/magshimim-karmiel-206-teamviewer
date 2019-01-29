@@ -28,100 +28,77 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.SignOutButton = new System.Windows.Forms.Button();
-            this.ControlScreenButton = new System.Windows.Forms.Button();
-            this.GroupFileShareButton = new System.Windows.Forms.Button();
-            this.FileShareButton = new System.Windows.Forms.Button();
-            this.giveControl = new System.Windows.Forms.Button();
+            this.lblIP = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // SignOutButton
+            // lblIP
             // 
-            this.SignOutButton.BackColor = System.Drawing.Color.White;
-            this.SignOutButton.Font = new System.Drawing.Font("Niagara Engraved", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SignOutButton.ForeColor = System.Drawing.Color.Black;
-            this.SignOutButton.Location = new System.Drawing.Point(416, 313);
-            this.SignOutButton.Name = "SignOutButton";
-            this.SignOutButton.Size = new System.Drawing.Size(204, 58);
-            this.SignOutButton.TabIndex = 9;
-            this.SignOutButton.Text = "Sign Out";
-            this.SignOutButton.UseVisualStyleBackColor = false;
-            this.SignOutButton.Click += new System.EventHandler(this.SignOutButton_Click);
+            this.lblIP.AutoSize = true;
+            this.lblIP.Location = new System.Drawing.Point(79, 65);
+            this.lblIP.Name = "lblIP";
+            this.lblIP.Size = new System.Drawing.Size(35, 13);
+            this.lblIP.TabIndex = 0;
+            this.lblIP.Text = "label1";
             // 
-            // ControlScreenButton
-            // 
-            this.ControlScreenButton.BackColor = System.Drawing.Color.White;
-            this.ControlScreenButton.Font = new System.Drawing.Font("Niagara Engraved", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ControlScreenButton.ForeColor = System.Drawing.Color.Black;
-            this.ControlScreenButton.Location = new System.Drawing.Point(416, 228);
-            this.ControlScreenButton.Name = "ControlScreenButton";
-            this.ControlScreenButton.Size = new System.Drawing.Size(204, 58);
-            this.ControlScreenButton.TabIndex = 10;
-            this.ControlScreenButton.Text = "Control Screen";
-            this.ControlScreenButton.UseVisualStyleBackColor = false;
-            this.ControlScreenButton.Click += new System.EventHandler(this.ControlScreenButton_Click);
-            // 
-            // GroupFileShareButton
-            // 
-            this.GroupFileShareButton.BackColor = System.Drawing.Color.White;
-            this.GroupFileShareButton.Font = new System.Drawing.Font("Niagara Engraved", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.GroupFileShareButton.ForeColor = System.Drawing.Color.Black;
-            this.GroupFileShareButton.Location = new System.Drawing.Point(173, 313);
-            this.GroupFileShareButton.Name = "GroupFileShareButton";
-            this.GroupFileShareButton.Size = new System.Drawing.Size(204, 58);
-            this.GroupFileShareButton.TabIndex = 11;
-            this.GroupFileShareButton.Text = "Group File Share";
-            this.GroupFileShareButton.UseVisualStyleBackColor = false;
-            // 
-            // FileShareButton
-            // 
-            this.FileShareButton.BackColor = System.Drawing.Color.White;
-            this.FileShareButton.Font = new System.Drawing.Font("Niagara Engraved", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FileShareButton.ForeColor = System.Drawing.Color.Black;
-            this.FileShareButton.Location = new System.Drawing.Point(173, 228);
-            this.FileShareButton.Name = "FileShareButton";
-            this.FileShareButton.Size = new System.Drawing.Size(204, 58);
-            this.FileShareButton.TabIndex = 12;
-            this.FileShareButton.Text = "File Share";
-            this.FileShareButton.UseVisualStyleBackColor = false;
-            // 
-            // giveControl
-            // 
-            this.giveControl.BackColor = System.Drawing.Color.White;
-            this.giveControl.Font = new System.Drawing.Font("Niagara Engraved", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.giveControl.ForeColor = System.Drawing.Color.Black;
-            this.giveControl.Location = new System.Drawing.Point(416, 144);
-            this.giveControl.Name = "giveControl";
-            this.giveControl.Size = new System.Drawing.Size(204, 58);
-            this.giveControl.TabIndex = 13;
-            this.giveControl.Text = "Give Control Screen";
-            this.giveControl.UseVisualStyleBackColor = false;
-            this.giveControl.Click += new System.EventHandler(this.giveControl_Click);
-            // 
-            // MainScreen
+            // frmServerAnaform
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.giveControl);
-            this.Controls.Add(this.FileShareButton);
-            this.Controls.Add(this.GroupFileShareButton);
-            this.Controls.Add(this.ControlScreenButton);
-            this.Controls.Add(this.SignOutButton);
-            this.Name = "MainScreen";
-            this.Text = "MainScreen";
+            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.Controls.Add(this.lblIP);
+            this.Name = "frmServerAnaform";
+            this.Text = "frmServerAnaform";
+            this.Load += new System.EventHandler(this.frmServerAnaform_Load);
             this.ResumeLayout(false);
+            this.PerformLayout();
+
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.SuspendLayout();
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(88, 166);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(100, 20);
+            this.textBox1.TabIndex = 0;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(37, 169);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(48, 13);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "Enter IP:";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(197, 164);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(56, 23);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "Connect";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // MainScreen
+            // 
+            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.textBox1);
+            this.Name = "MainScreen";
+            this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button SignOutButton;
-        private System.Windows.Forms.Button ControlScreenButton;
-        private System.Windows.Forms.Button GroupFileShareButton;
-        private System.Windows.Forms.Button FileShareButton;
-        private System.Windows.Forms.Button giveControl;
+        private System.Windows.Forms.Label lblIP;
     }
 }
 

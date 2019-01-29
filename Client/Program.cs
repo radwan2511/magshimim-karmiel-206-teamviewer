@@ -20,7 +20,8 @@ namespace TeamViewer___Client
         CREATE_ROOM = "213",
         JOIN_ROOM = "209";
         public const int PORT = 8820,
-        CLIENT_PORT = 8000;
+        STRING_PORT = 8000,
+        SCREEN_PORT = 13000;
     }
         static class Program
     {

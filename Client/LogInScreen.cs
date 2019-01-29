@@ -28,7 +28,7 @@ namespace TeamViewer___Client
         public LogInScreen()
         {
             InitializeComponent();
-            Init_Data();
+            //Init_Data();
             Thread c = new Thread(serverConnection);
             c.Start();
 
@@ -40,7 +40,9 @@ namespace TeamViewer___Client
             {
                 //starts the connection
                 client = new TcpClient();
-                serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.LOCAL_HOST), Constants.PORT);
+                // change ip here
+                // ip for computer that runs the server on it
+                serverEndPoint = new IPEndPoint(IPAddress.Parse("10.0.0.13"), Constants.PORT);
                 client.Connect(serverEndPoint);
                 clientStream = client.GetStream();
                 MSG = "";
@@ -145,11 +147,24 @@ namespace TeamViewer___Client
                     msgHandler();
                     if (RecivedMSG == Constants.SUCCESS)
                     {
-                        save_data();
+                        //save_data();
                         this.Hide();
-                        Form Main = new MainScreen();
-                        Main.ShowDialog();
-                        this.Show();
+
+                        MSG = Constants.LOG_OUT;
+                        byte[] buffer = new ASCIIEncoding().GetBytes(MSG);
+                        clientStream.Write(buffer, 0, buffer.Length);
+                        clientStream.Flush();
+                        client.Close();
+
+
+                        MainScreen Main = new MainScreen();
+                        Main.Show();
+                        
+
+                        ///////////////////////////////////////////////////////////////////////////
+
+
+                        //this.Show();
                     }
                 }
                 else if(usernameBox.Text == "" || passwordBox.Text == "")
@@ -171,7 +186,7 @@ namespace TeamViewer___Client
             signUp.ShowDialog();
             this.Show();
         }
-
+        /*
         private void Init_Data()
         {
             if(Properties.Settings.Default.Username != string.Empty)
@@ -186,6 +201,7 @@ namespace TeamViewer___Client
                     usernameBox.Text = Properties.Settings.Default.Username;
                 }
             }
+            
         }
 
         private void save_data()
@@ -204,6 +220,6 @@ namespace TeamViewer___Client
                 Properties.Settings.Default.Remember = "no";
                 Properties.Settings.Default.Save();
             }
-        }
+        }*/
     }
 }
