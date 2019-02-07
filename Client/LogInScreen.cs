@@ -42,7 +42,7 @@ namespace TeamViewer___Client
                 client = new TcpClient();
                 // change ip here
                 // ip for computer that runs the server on it
-                serverEndPoint = new IPEndPoint(IPAddress.Parse("10.0.0.13"), Constants.PORT);
+                serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.IP), Constants.PORT);
                 client.Connect(serverEndPoint);
                 clientStream = client.GetStream();
                 MSG = "";
@@ -150,11 +150,11 @@ namespace TeamViewer___Client
                         //save_data();
                         this.Hide();
 
-                        MSG = Constants.LOG_OUT;
-                        byte[] buffer = new ASCIIEncoding().GetBytes(MSG);
-                        clientStream.Write(buffer, 0, buffer.Length);
-                        clientStream.Flush();
-                        client.Close();
+                        //MSG = Constants.LOG_OUT;
+                        //byte[] buffer = new ASCIIEncoding().GetBytes(MSG);
+                        //clientStream.Write(buffer, 0, buffer.Length);
+                        //clientStream.Flush();
+                        //client.Close();
 
 
                         MainScreen Main = new MainScreen();

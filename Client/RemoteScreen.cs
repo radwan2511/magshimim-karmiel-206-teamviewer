@@ -39,7 +39,7 @@ namespace TeamViewer___Client
             //function3("10.0.0.5");
             //
             // change ip here
-            IPEndPoint iipp = new IPEndPoint(IPAddress.Parse("10.0.0.13"),1453); 
+            IPEndPoint iipp = new IPEndPoint(IPAddress.Parse(Constants.IP),1455);
             //
 
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

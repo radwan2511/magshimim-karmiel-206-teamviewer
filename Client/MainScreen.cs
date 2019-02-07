@@ -185,12 +185,12 @@ namespace TeamViewer___Client
 
             // added by me
             // change ip here
-            // ip for מחשב נשלט
-            lblIP.Text = "10.0.0.13";
+            // ip for controlled computer
+            lblIP.Text = Constants.IP;
 
             mouse_klavyeDinleme = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             //mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(ip.AddressList[0].ToString()), 1453));
-            mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse("10.0.0.13"), 1453));
+            mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(Constants.IP), 1453));
 
             mouse_klavyeDinleme.Listen(1);
 

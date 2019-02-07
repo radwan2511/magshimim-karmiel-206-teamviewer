@@ -8,7 +8,7 @@ namespace TeamViewer___Client
 {
     static class Constants // defines
     {
-        public const string LOCAL_HOST = "127.0.0.1",
+        public const string IP = "192.168.1.91",
         LOG_IN = "200",
         LOG_OUT = "201",//NOT USED
         SIGN_UP = "203",

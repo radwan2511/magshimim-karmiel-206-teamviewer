@@ -122,6 +122,16 @@ bool Server::handleLogIn(RecievedMessage * msg)
 {
 	vector<string> vec = msg->getValues();
 	User* newUser = nullptr;
+	//just a test
+	if (_db.addNewstatistic("192.168.1.91","PNG","21:41"))
+	{
+		cout << "statistic was added " << endl;
+	}
+	else
+	{
+		cout << "statistic was'nt added " << endl;
+	}
+	//
 	if (this->_db.isUserAndPassMatch(vec[0], vec[1]))
 	{
 		newUser = getUserByName(vec[0]);
