@@ -29,6 +29,7 @@ public:
 	static int callback(void* notUsed, int argc, char** argv, char** azCol);
 	static int statisticsCallback(void* notUsed, int argc, char** argv, char** azCol);
 	bool addNewstatistic(string ip, string fileType, string time);
+	bool printsStatistic();
 private:
 
 	sqlite3 * _db;

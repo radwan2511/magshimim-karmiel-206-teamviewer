@@ -42,9 +42,9 @@ DataBase::DataBase()
 	//gets the statistics
 
 	st = "select * from statistics";
-	rc = sqlite3_exec(_db, st.c_str(), callback, 0, &zErrMsg);
+	rc = sqlite3_exec(_db, st.c_str(), statisticsCallback, 0, &zErrMsg);
 
-	size = statistics["username"].size();
+	size = statistics["IP"].size();
 	for (int j = 0; j < size; j++)
 	{
 		_ips.emplace_back(statistics["IP"][j]);
@@ -52,7 +52,8 @@ DataBase::DataBase()
 		_times.emplace_back(statistics["Time"][j]);
 	}
 
-	statistics.clear();//clears the results
+	printsStatistic();
+	//statistics.clear();//clears the statistics
 
 
 }
@@ -131,6 +132,19 @@ bool DataBase::addNewstatistic(string ip, string fileType, string time)
 	_files.emplace_back(fileType);
 	_times.emplace_back(time);
 
+	return true;
+}
+
+bool DataBase::printsStatistic()
+{
+	cout << "press enter to print " << endl;
+	cin.get();
+	int size = statistics["IP"].size();
+	cout << "IP" << "|"<< "File" <<  "|" << "Time" << "|" <<  endl;
+	for (int i = 0; i < size; i++)
+	{
+		cout << statistics["IP"][i] << "|" << statistics["File"][i] << "|" << statistics["Time"][i] << "|" << endl;
+	}
 	return true;
 }
 
