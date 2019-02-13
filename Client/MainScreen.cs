@@ -10,8 +10,9 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using System.IO.Compression;
 
-namespace TeamViewer___Client
+namespace client_ppp
 {
     [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi)]
     struct DEVMODE
@@ -166,6 +167,7 @@ namespace TeamViewer___Client
         private Label label1;
         private Label label2;
         private Button button1;
+        private Button button2;
 
         delegate void ResimGonderHandler();
         string KarsiIP = "";
@@ -177,25 +179,37 @@ namespace TeamViewer___Client
 
         private void frmServerAnaform_Load(object sender, EventArgs e)
         {
-            string host = Dns.GetHostName();
-            IPHostEntry ip = Dns.GetHostByName(host);
+            //string host = Dns.GetHostName();
+            IPHostEntry host;
+            string localIp = "?";
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach(IPAddress ip in host.AddressList)
+            {
+                if(ip.AddressFamily.ToString() == "InterNetwork")
+                {
+                    localIp = ip.ToString();
+                    //lblIP.Text = ip.ToString();
+                    lblIP.Text = localIp;
+                }
+            }
 
-
-            lblIP.Text = ip.AddressList[0].ToString();
+            //lblIP.Text = ip.AddressList[0].ToString();
 
             // added by me
             // change ip here
-            // ip for controlled computer
-            lblIP.Text = Constants.IP;
-
-            mouse_klavyeDinleme = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            //mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(ip.AddressList[0].ToString()), 1453));
-            mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(Constants.IP), 1453));
-
-            mouse_klavyeDinleme.Listen(1);
+            // ip for מחשב נשלט
+            //lblIP.Text = "10.68.83.85";
+            
 
 
-            mouse_klavyeDinleme.BeginAccept(new AsyncCallback(Baglandiginda), null);
+            //mouse_klavyeDinleme = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            ////mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(ip.AddressList[0].ToString()), 1453));
+            //mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(lblIP.Text), 1453));
+
+            //mouse_klavyeDinleme.Listen(1);
+
+
+            //mouse_klavyeDinleme.BeginAccept(new AsyncCallback(Baglandiginda), null);
         }
 
 
@@ -280,31 +294,65 @@ namespace TeamViewer___Client
 
         byte[] EkranGoruntusu()
         {
+            // #1
             //Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
             //Graphics gr = Graphics.FromImage(bmp);
-            //gr.CopyFromScreen(0, 0, 0, 0, new Size(bmp.Width, bmp.Height));
+            //gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
             //MemoryStream ms = new MemoryStream();
-            //bmp.Save(ms, ImageFormat.Png);
+            //bmp.Save(ms, ImageFormat.MemoryBmp);
             //return ms.GetBuffer();
 
-            Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
-                                   Screen.PrimaryScreen.Bounds.Height,
-                                   PixelFormat.Format32bppArgb);
+            ////////////////////////////
+            /// #2
+            //Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+            //                       Screen.PrimaryScreen.Bounds.Height,
+            //                       PixelFormat.Format32bppArgb);
 
-            // Create a graphics object from the bitmap.
-            var gfxScreenshot = Graphics.FromImage(screenshot);
+            //// Create a graphics object from the bitmap.
+            //var gfxScreenshot = Graphics.FromImage(screenshot);
 
-            // Take the screenshot from the upper left corner to the right bottom corner.
-            gfxScreenshot.CopyFromScreen(Screen.PrimaryScreen.Bounds.X,
-                                        Screen.PrimaryScreen.Bounds.Y,
-                                        0,
-                                        0,
-                                        Screen.PrimaryScreen.Bounds.Size,
-                                        CopyPixelOperation.SourceCopy);
+            //// Take the screenshot from the upper left corner to the right bottom corner.
+            //gfxScreenshot.CopyFromScreen(Screen.PrimaryScreen.Bounds.X,
+            //                            Screen.PrimaryScreen.Bounds.Y,
+            //                            0,
+            //                            0,
+            //                            Screen.PrimaryScreen.Bounds.Size,
+            //                            CopyPixelOperation.SourceCopy);
+
+            //MemoryStream ms = new MemoryStream();
+            //screenshot.Save(ms, ImageFormat.Png);
+            //return ms.GetBuffer();
+
+
+            // compress
+
+            Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            Graphics gr = Graphics.FromImage(bmp);
+            gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
+            //compress
 
             MemoryStream ms = new MemoryStream();
-            screenshot.Save(ms, ImageFormat.Png);
-            return ms.GetBuffer();
+            bmp.Save(ms, ImageFormat.Png);
+
+
+            byte[] compressed;
+
+            using (var outStream = new MemoryStream())
+            {
+                using (var tinyStream = new GZipStream(outStream, CompressionMode.Compress))
+                {
+                    using (var mStream = new MemoryStream(ms.GetBuffer()))
+                    {
+                        mStream.CopyTo(tinyStream);
+
+
+                        compressed = outStream.ToArray();
+                    }
+                }
+            }
+
+
+            return compressed;
 
         }
 
@@ -360,14 +408,51 @@ namespace TeamViewer___Client
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (mouse_klavyeDinleme != null)
-            {
-                mouse_klavyeDinleme.Close();
-            }
+            button2.Enabled = false;
             RemoteScreen screen = new RemoteScreen(textBox1.Text);
             screen.Show();
 
-            this.Close();
+            // here need to return after we finish what we selected
+            this.Hide();
+        }
+
+        //private void InitializeComponent()
+        //{
+        //    this.button2 = new System.Windows.Forms.Button();
+        //    this.SuspendLayout();
+        //    // 
+        //    // button2
+        //    // 
+        //    this.button2.Location = new System.Drawing.Point(29, 32);
+        //    this.button2.Name = "button2";
+        //    this.button2.Size = new System.Drawing.Size(75, 23);
+        //    this.button2.TabIndex = 0;
+        //    this.button2.Text = "Give Access";
+        //    this.button2.UseVisualStyleBackColor = true;
+        //    this.button2.Click += new System.EventHandler(this.button2_Click);
+        //    // 
+        //    // MainScreen
+        //    // 
+        //    this.ClientSize = new System.Drawing.Size(284, 261);
+        //    this.Controls.Add(this.button2);
+        //    this.Name = "MainScreen";
+        //    this.ResumeLayout(false);
+
+        //}
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            button1.Enabled = false;
+            mouse_klavyeDinleme = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(ip.AddressList[0].ToString()), 1453));
+            mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(lblIP.Text), 1453));
+
+            mouse_klavyeDinleme.Listen(1);
+
+
+            mouse_klavyeDinleme.BeginAccept(new AsyncCallback(Baglandiginda), null);
+
+            //this.Hide();
         }
     }
 }

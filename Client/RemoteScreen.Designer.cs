@@ -1,4 +1,4 @@
-﻿namespace TeamViewer___Client
+﻿namespace client_ppp
 {
     partial class RemoteScreen
     {

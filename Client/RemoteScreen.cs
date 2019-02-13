@@ -14,8 +14,9 @@ using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.IO.Compression;
 
-namespace TeamViewer___Client
+namespace client_ppp
 {
     public partial class RemoteScreen : Form
     {
@@ -31,15 +32,26 @@ namespace TeamViewer___Client
 
         private void Screen_Load(object sender, EventArgs e)
         {
-            string host = Dns.GetHostName();
-            IPHostEntry ip = Dns.GetHostByName(host);
+            string hostt = Dns.GetHostName();
+            IPHostEntry ippp = Dns.GetHostByName(hostt);
+
+            IPHostEntry host;
+            string localIp = "?";
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ip.AddressFamily.ToString() == "InterNetwork")
+                {
+                    localIp = ip.ToString();
+                }
+            }
 
 
             //
             //function3("10.0.0.5");
             //
             // change ip here
-            IPEndPoint iipp = new IPEndPoint(IPAddress.Parse(Constants.IP),1455);
+            IPEndPoint iipp = new IPEndPoint(IPAddress.Parse(localIp),1453);
             //
 
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -49,7 +61,8 @@ namespace TeamViewer___Client
 
             socket.Listen(1);
             socket.BeginAccept(new AsyncCallback(function1), null);
-            function3(ip.AddressList[0].ToString());
+            function3(ippp.AddressList[0].ToString());
+            //function3(localIp);
         }
 
         void function1(IAsyncResult var)
@@ -75,8 +88,29 @@ namespace TeamViewer___Client
             }
             else
             {
+                //MemoryStream ms = new MemoryStream(bytes2);
+                //Image img = Bitmap.FromStream(ms);
+                //pictureBox1.Image = img;
+
+                //decomopress
+
                 MemoryStream ms = new MemoryStream(bytes2);
-                Image img = Bitmap.FromStream(ms);
+                Image img;
+                using (var inStream = new MemoryStream(bytes2))
+                {
+                    using (var bigStream = new GZipStream(inStream, CompressionMode.Decompress))
+                    {
+                        using (var bigStreamOut = new MemoryStream())
+                        {
+
+                            bigStream.CopyTo(bigStreamOut);
+                            img = Bitmap.FromStream(bigStreamOut);
+                        }
+                    }
+                }
+
+
+                //Image img = Bitmap.FromStream(ms);
                 pictureBox1.Image = img;
             }
 

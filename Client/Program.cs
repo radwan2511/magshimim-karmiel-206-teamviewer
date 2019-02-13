@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TeamViewer___Client
+namespace client_ppp
 {
     static class Constants // defines
     {
-        public const string IP = "192.168.1.91",
+        public const string LOCAL_HOST = "127.0.0.1",
         LOG_IN = "200",
         LOG_OUT = "201",//NOT USED
         SIGN_UP = "203",
@@ -34,6 +34,7 @@ namespace TeamViewer___Client
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new LogInScreen());
+            //Application.Run(new MainScreen());
         }
     }
 }

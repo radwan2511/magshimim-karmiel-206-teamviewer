@@ -13,7 +13,7 @@ using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.IO;
 
-namespace TeamViewer___Client
+namespace client_ppp
 {
     public partial class LogInScreen : Form
     {
@@ -42,7 +42,7 @@ namespace TeamViewer___Client
                 client = new TcpClient();
                 // change ip here
                 // ip for computer that runs the server on it
-                serverEndPoint = new IPEndPoint(IPAddress.Parse(Constants.IP), Constants.PORT);
+                serverEndPoint = new IPEndPoint(IPAddress.Parse("10.0.0.36"), Constants.PORT);
                 client.Connect(serverEndPoint);
                 clientStream = client.GetStream();
                 MSG = "";
@@ -157,10 +157,11 @@ namespace TeamViewer___Client
                         //client.Close();
 
 
-                        MainScreen Main = new MainScreen();
-                        Main.Show();
-                        
+                        //MainScreen Main = new MainScreen();
+                        //Main.Show();
 
+                        Option opt = new Option();
+                        opt.Show();
                         ///////////////////////////////////////////////////////////////////////////
 
 

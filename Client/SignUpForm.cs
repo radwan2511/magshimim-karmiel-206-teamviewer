@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.IO;
 
-namespace TeamViewer___Client
+namespace client_ppp
 {
     public partial class SignUpForm : Form
     {

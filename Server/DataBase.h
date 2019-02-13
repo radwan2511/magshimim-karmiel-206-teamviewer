@@ -27,20 +27,12 @@ public:
 	bool addNewUser(string username, string password, string email);
 	bool isUserAndPassMatch(string username, string password);
 	static int callback(void* notUsed, int argc, char** argv, char** azCol);
-	static int statisticsCallback(void* notUsed, int argc, char** argv, char** azCol);
-	bool addNewstatistic(string ip, string fileType, string time);
-	bool printsStatistic();
 private:
 
 	sqlite3 * _db;
-	//user
 	vector<string> _usernames;
 	vector<string> _passwords;
 	vector<string> _emails;
-	//statistics
-	vector<string> _ips;
-	vector<string> _files;
-	vector<string> _times;
 
 	int rc;
 	char *zErrMsg = 0;

@@ -2,7 +2,6 @@
 #include <iostream>
 
 unordered_map<string, vector<string>> results;
-unordered_map<string, vector<string>> statistics;
 
 /*
 constructor for the dataBase
@@ -22,9 +21,6 @@ DataBase::DataBase()
 	}
 	_usernames.clear();
 	_passwords.clear();
-	_ips.clear();
-	_files.clear();
-	_times.clear();
 	results.clear();
 
 	st = "select * from users";
@@ -39,26 +35,15 @@ DataBase::DataBase()
 	}
 
 	results.clear();
-	//gets the statistics
-
-	st = "select * from statistics";
-	rc = sqlite3_exec(_db, st.c_str(), statisticsCallback, 0, &zErrMsg);
-
-	size = statistics["IP"].size();
-	for (int j = 0; j < size; j++)
-	{
-		_ips.emplace_back(statistics["IP"][j]);
-		_files.emplace_back(statistics["File"][j]);
-		_times.emplace_back(statistics["Time"][j]);
-	}
-
-	printsStatistic();
-	//statistics.clear();//clears the statistics
-
+	/*
+	st = "select * from password";
+	rc = sqlite3_exec(_db, st.c_str(), callback, 0, &zErrMsg);
+	*/
+	results.clear();
 
 }
 /*
-the function calls back 
+callback
 input : void * notUsed, int argc, char ** argv, char ** azCol
 output: int
 */
@@ -86,66 +71,6 @@ int DataBase::callback(void * notUsed, int argc, char ** argv, char ** azCol)
 	}
 
 	return 0;
-}
-
-/*
-the function calls back the statistics
-input : void * notUsed, int argc, char ** argv, char ** azCol
-output: int
-*/
-int DataBase::statisticsCallback(void * notUsed, int argc, char ** argv, char ** azCol)
-{
-	int i;
-
-	for (i = 0; i < argc; i++)
-	{
-
-		auto it = statistics.find(azCol[i]);
-		if (it != statistics.end())
-		{
-			it->second.push_back(argv[i]);
-		}
-		else
-		{
-			pair<string, vector<string>> p;
-			p.first = azCol[i];
-
-			p.second.push_back(argv[i]);
-
-			statistics.insert(p);
-		}
-	}
-
-	return 0;
-}
-
-bool DataBase::addNewstatistic(string ip, string fileType, string time)
-{
-	string st = "INSERT INTO statistics (IP,File,Time) VALUES ( '" + ip + "','" + fileType + "','" + time + "')";
-	rc = sqlite3_exec(_db, st.c_str(), callback, 0, &zErrMsg);
-	if (rc != SQLITE_OK)
-	{
-		return false;
-	}
-
-	_ips.emplace_back(ip);
-	_files.emplace_back(fileType);
-	_times.emplace_back(time);
-
-	return true;
-}
-
-bool DataBase::printsStatistic()
-{
-	cout << "press enter to print " << endl;
-	cin.get();
-	int size = statistics["IP"].size();
-	cout << "IP" << "|"<< "File" <<  "|" << "Time" << "|" <<  endl;
-	for (int i = 0; i < size; i++)
-	{
-		cout << statistics["IP"][i] << "|" << statistics["File"][i] << "|" << statistics["Time"][i] << "|" << endl;
-	}
-	return true;
 }
 
 
