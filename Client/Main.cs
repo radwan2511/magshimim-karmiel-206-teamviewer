@@ -483,10 +483,23 @@ public partial class Main : Form
                     if (!isInfected)
                     {
                         transferClient.QueueTransfer(file);
+                        sendStatistic(file);
                     }
                 }
             }
         }
+    }
+
+    public void sendStatistic(string file)
+    {
+        //Start of the statistic
+        string sendersIp = txtCntHost.Text; // the ip of the sender
+        string reciversIp = transferClient.EndPoint.Address.ToString();// the ip of the reciver
+        string fileType = file.Substring(file.IndexOf('.'));
+        string time = DateTime.Now.ToShortTimeString(); // the current time 
+        LogInScreen.MSG = Constants.STATISTIC_MSG + sendersIp.Length + sendersIp + reciversIp.Length + reciversIp + fileType.Length + fileType + time.Length + time;
+        LogInScreen.msgHandler();
+        //the end of the statstic 
     }
 
     private void btnPauseTransfer_Click(object sender, EventArgs e)

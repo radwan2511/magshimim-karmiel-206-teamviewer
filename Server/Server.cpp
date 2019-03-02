@@ -239,6 +239,10 @@ void Server::handleRecievedMessages()
 			handleSignUp(_queRcvMessages.front());
 			cout << "We got a new user :D" << endl;
 			break;
+		case STATISTIC:
+			handleStatistic(_queRcvMessages.front());
+			cout << "The statistic was added" << endl;
+			break;
 		default:
 			handleSignOut(_queRcvMessages.front());
 			//cout << _queRcvMessages.front()->getUser()->getUsername() << "Signed out !!" << endl;
@@ -265,6 +269,26 @@ void Server::addRecievedMessage(RecievedMessage * rcvMessage)
 	_cond.notify_one();
 
 
+}
+
+bool Server::handleStatistic(RecievedMessage * msg)
+{
+	Helper::sendData(msg->getSock(), "206");
+	vector<string> vec = msg->getValues();
+	string email_from = vec[0];
+	string email_to = vec[1];
+	string type = vec[2];
+	string time = vec[3];
+	if(_db.addNewstatistic(email_from,email_to,type,time))
+	{
+		cout << "statistic was added " << endl;
+		return true;
+	}
+	else
+	{
+		cout << "statistic was'nt added " << endl;
+		return false;
+	}
 }
 
 /*

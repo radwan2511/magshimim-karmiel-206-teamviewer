@@ -18,7 +18,8 @@ namespace client_ppp
         MOVE = "220",
         CLICK = "103",
         CREATE_ROOM = "213",
-        JOIN_ROOM = "209";
+        JOIN_ROOM = "209",
+        STATISTIC_MSG = "260";
         public const int PORT = 8820,
         STRING_PORT = 8000,
         SCREEN_PORT = 13000;

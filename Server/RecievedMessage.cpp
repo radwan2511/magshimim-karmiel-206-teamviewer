@@ -44,6 +44,15 @@ RecievedMessage::RecievedMessage(SOCKET socket, int messageCode)
 		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 3));
 		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 3));
 	}
+	if(messageCode == 260)
+	{
+		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 2)));
+		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 2)));
+		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 1)));
+		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 1)));
+		//this->_values.emplace_back("JPEG");
+		//this->_values.emplace_back("23:15:11");
+	}
 }
 
 /*
