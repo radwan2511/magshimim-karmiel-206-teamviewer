@@ -28,9 +28,13 @@ namespace client_ppp
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
+
+        //What we are using for ID generation
+        public static Random Rand;
         [STAThread]
         static void Main()
         {
+            Rand = new Random();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new LogInScreen());

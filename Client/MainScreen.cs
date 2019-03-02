@@ -158,11 +158,16 @@ namespace client_ppp
         static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData,
            UIntPtr dwExtraInfo);
 
+        // added by radwan 27.2.2019
+        [DllImport("user32")]
+        public static extern int SetCursorPos(int x, int y);
+
         const int KEYEVENTF_KEYUP = 0x2;
         const int KEYEVENTF_EXTENDEDKEY = 0x1;
 
         Socket mouse_klavyeDinleme = null;
-        byte[] dizi = new byte[200];
+        byte[] dizi = new byte[2000];
+        // dizi bytes was 200
         private TextBox textBox1;
         private Label label1;
         private Label label2;
@@ -233,17 +238,28 @@ namespace client_ppp
                 DEVMODE dv = new DEVMODE();
                 EnumDisplaySettings(null, -1, ref dv);
                 string gonderilcek = dv.dmPelsWidth.ToString() + ":" + dv.dmPelsHeight.ToString() + "|";
+                //string gonderilcek = "1280" + ":" + "720" + "|";
+                //if (dv.dmPelsWidth.ToString() < 1280)
+
                 ekranCozunurlukGonder(gonderilcek);
                 ResimGonderHandler resimGonder = new ResimGonderHandler(ResimGonder);
                 resimGonder.BeginInvoke(new AsyncCallback(islemsonlandi), null);
             }
             else
             {
+                // to set the real 
+                //int aa = Screen.PrimaryScreen.Bounds.Height - 1280 + 16;
+                //int bb = Screen.PrimaryScreen.Bounds.Height - 720 + 38;
                 if (islenecek.Contains("MouseMove"))
                 {
                     int x = int.Parse(islenecek.Substring(0, islenecek.IndexOf(':')));
                     int y = int.Parse(islenecek.Substring(islenecek.IndexOf(':') + 1, islenecek.IndexOf('|') - islenecek.IndexOf(':') - 1));
-                    Cursor.Position = new Point(x, y);
+                    ////x = x + aa;
+                    ////y = y + bb;
+                    //x = x + 16;
+                    //y = y + 38;
+                    //Cursor.Position = new Point(x, y);
+                    SetCursorPos(x, y);
                 }
                 else if (islenecek.Contains("MouseDown"))
                 {

@@ -42,7 +42,7 @@ namespace client_ppp
                 client = new TcpClient();
                 // change ip here
                 // ip for computer that runs the server on it
-                serverEndPoint = new IPEndPoint(IPAddress.Parse("10.0.0.36"), Constants.PORT);
+                serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.43.113"), Constants.PORT);
                 client.Connect(serverEndPoint);
                 clientStream = client.GetStream();
                 MSG = "";

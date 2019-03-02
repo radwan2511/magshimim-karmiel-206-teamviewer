@@ -61,7 +61,8 @@ namespace client_ppp
 
             socket.Listen(1);
             socket.BeginAccept(new AsyncCallback(function1), null);
-            function3(ippp.AddressList[0].ToString());
+            //System.Threading.Thread.Sleep(1000);
+            function3(localIp);
             //function3(localIp);
         }
 
@@ -84,7 +85,17 @@ namespace client_ppp
                 string st = Encoding.UTF8.GetString(bytes2);
                 int width = int.Parse(st.Substring(0, st.IndexOf(':')));
                 int height = int.Parse(st.Substring(st.IndexOf(':') + 1, st.IndexOf('|') - st.IndexOf(':') - 1));
+                //while (width > Screen.PrimaryScreen.Bounds.Width)
+                //{
+                //    width = width - 100;
+                //}
+                //while (height > Screen.PrimaryScreen.Bounds.Height)
+                //{
+                //    height = height - 100;
+                //}
+                //this.Size = new Size(width+16, height+38);
                 this.Size = new Size(width+16, height+38);
+
             }
             else
             {
@@ -151,6 +162,7 @@ namespace client_ppp
         {
             int x = e.X;
             int y = e.Y;
+
             Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             sock.Connect(IPAddress.Parse(ipp), 1453);
             Byte[] bytes3 = Encoding.UTF8.GetBytes(x.ToString() + ":" + y.ToString() + "|MouseMove");

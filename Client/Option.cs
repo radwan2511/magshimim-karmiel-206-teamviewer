@@ -22,6 +22,14 @@ namespace client_ppp
             this.Hide();
             MainScreen Main = new MainScreen();
             Main.Show();
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            Main file_transfer = new Main();
+            file_transfer.Show();
         }
     }
 }
