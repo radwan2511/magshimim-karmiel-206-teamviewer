@@ -173,6 +173,7 @@
             this.Controls.Add(this.usernameBox);
             this.Controls.Add(this.usernameLabel);
             this.Name = "LogInScreen";
+            this.Load += new System.EventHandler(this.LogInScreen_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

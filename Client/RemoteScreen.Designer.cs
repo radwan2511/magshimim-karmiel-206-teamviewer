@@ -46,15 +46,18 @@
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
             // 
-            // Screen
+            // RemoteScreen
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(673, 406);
             this.Controls.Add(this.pictureBox1);
-            this.Name = "Screen";
+            this.Name = "RemoteScreen";
             this.Text = "Screen";
             this.Load += new System.EventHandler(this.Screen_Load);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.RemoteScreen_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.RemoteScreen_DragEnter);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Screen_KeyUp);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);

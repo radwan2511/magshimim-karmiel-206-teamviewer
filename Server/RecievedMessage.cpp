@@ -1,5 +1,6 @@
 #include "RecievedMessage.h"
 
+
 /*
 this function build the RecievedMessage
 INPUT : SOCKET socket, int messageCode
@@ -21,38 +22,7 @@ RecievedMessage::RecievedMessage(SOCKET socket, int messageCode)
 		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 2)));
 		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 2)));
 	}
-	if (messageCode == 213)
-	{
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 2)));
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 1));
-	}
-	if (messageCode == 207)
-	{
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 4));
-	}
-	if (messageCode == 209)
-	{
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 4));
-	}
-	if (messageCode == 219)
-	{
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 1));
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 2));
-	}
-	if (messageCode == 220)
-	{
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 3));
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, 3));
-	}
-	if(messageCode == 260)
-	{
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 2)));
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 2)));
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 1)));
-		this->_values.emplace_back(Helper::getStringPartFromSocket(this->_sock, Helper::getIntPartFromSocket(this->_sock, 1)));
-		//this->_values.emplace_back("JPEG");
-		//this->_values.emplace_back("23:15:11");
-	}
+
 }
 
 /*
@@ -117,4 +87,14 @@ OUTPUT : Values
 vector<string>& RecievedMessage::getValues()
 {
 	return this->_values;
+}
+
+/*
+close the socket
+input: void
+output: void
+*/
+void RecievedMessage::closeSocket()
+{
+	closesocket(this->_sock);
 }

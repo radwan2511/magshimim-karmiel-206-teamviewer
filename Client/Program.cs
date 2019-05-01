@@ -15,14 +15,18 @@ namespace client_ppp
         FAIL = "299",
         ZERO = "0",
         SUCCESS = "206",
-        MOVE = "220",
-        CLICK = "103",
-        CREATE_ROOM = "213",
-        JOIN_ROOM = "209",
-        STATISTIC_MSG = "260";
+        NOT_REGISTERED = "208",
+        USERNAME_INVALID = "1043",
+        USER_EXISTS = "209",
+        PASSWORD_INVALID = "1041";
         public const int PORT = 8820,
         STRING_PORT = 8000,
-        SCREEN_PORT = 13000;
+        SCREEN_PORT = 13000,
+        SEQUENCE_SIZE = 2000,
+        FILE_DATA_SIZE = 1500,
+        REMOTE_PORT = 1453,
+        MAX_BYTE_SIZE = 9999999;
+
     }
         static class Program
     {

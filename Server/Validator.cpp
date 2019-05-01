@@ -9,6 +9,10 @@ bool Validator::isPasswordValid(string password)
 	bool uppercase = false;
 	bool lowercase = false;
 	bool hasOneDigit = false;
+	if (password.size() < 6)
+	{
+		return false;
+	}
 	for ( int i = 0; i < password.size() ; i++)
 	{
 		if (isalpha(password[i]))
@@ -42,6 +46,10 @@ OUTPUT : true if vaild and false if does'nt
 bool Validator::isUsernameValid(string username)
 {
 	if ( username.c_str() == "" || username.length() == 0)
+	{
+		return false;
+	}
+	if (username.size() < 6)
 	{
 		return false;
 	}

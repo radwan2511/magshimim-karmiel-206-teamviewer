@@ -8,15 +8,22 @@
 // and returns the code. if no message found in the socket returns 0 (which means the client disconnected)
 int Helper::getMessageTypeCode(SOCKET sc)
 {
-	char* s = getPartFromSocket(sc, 3);
-	std::string msg(s);
+	try
+	{
+		char* s = getPartFromSocket(sc, 3);
+		std::string msg (s);
 
-	if (msg == "")
+		if (msg == "")
+			return 0;
+
+		int res = std::atoi(s);
+		delete s;
+		return  res;
+	}
+	catch (int e)
+	{
 		return 0;
-
-	int res = std::atoi(s);
-	delete s;
-	return  res;
+	}
 }
 
 // recieve data from socket according byteSize

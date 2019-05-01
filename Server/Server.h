@@ -27,7 +27,6 @@
 #define SIGN_OUT 201
 #define SIGN_UP 203
 #define SUCCESS 206
-#define STATISTIC 260 
 //#define AVAILABLE_ROOM_REQUEST 205//Not used
 //#define ROOM_USERS_REQUEST 207//Not used
 //#define ROOM_JOIN 209
@@ -40,7 +39,6 @@
 #define DEFAULT_BUFLEN 1024
 #define FAIL "200"
 #define LEN_CHECK 2//Not needed?
-
 
 
 
@@ -63,8 +61,15 @@ public:
 	RecievedMessage * buildRecievedMessage(SOCKET socket, int messageCode);
 	void handleRecievedMessages();
 	void addRecievedMessage(RecievedMessage * rcvMessage);
-	//statistic
-	bool handleStatistic(RecievedMessage * msg);//200
+	//room
+	//bool handleCreateRoom(RecievedMessage* msg);//213
+	//bool handleCloseRoom(RecievedMessage* msg);//215
+	//bool handleJoinRoom(RecievedMessage* msg);//209
+	//bool handleLeaveRoom(RecievedMessage * msg);//211 - check what to do 
+
+	//make a check if the room exists
+	//controlling
+	//void handleControl(RecievedMessage * msg);//220
 
 private:
 

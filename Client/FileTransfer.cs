@@ -12,6 +12,10 @@ using client_ppp;
 using System.Security.Cryptography;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
+using VirusTotalNET.Results;
+using VirusTotalNET;
 
 public partial class Main : Form
 {
@@ -23,7 +27,12 @@ public partial class Main : Form
     public static byte[] secondKey;
     public static byte[] secondIV;
 
-    //encrypt function
+    static string resultFromScan = "";
+
+    /* encrypt function , will encrypt the bytes with aes encryption
+     * input: byte[] bytes
+     * output: byte[] encrepted bytes
+     */
     public static byte[] Encrypt(byte[] bytes)
     {
         if (bytes == null || key == null || IV == null || bytes.Length <= 0 || key.Length <= 0 || IV.Length <= 0)
@@ -53,7 +62,10 @@ public partial class Main : Form
         return data;
     }
 
-    //decrypt function
+    /* dycrypt function , will decrypt the bytes with aes decryption
+     * input: byte[] bytes
+     * output: byte[] decrepted bytes
+     */
     public static byte[] Decrypt(byte[] bytes)
     {
         if (bytes == null || key == null || IV == null || bytes.Length <= 0 || key.Length <= 0 || IV.Length <= 0)
@@ -169,10 +181,21 @@ public partial class Main : Form
         setConnectionStatus(transferClient.EndPoint.Address.ToString());
     }
 
+    /* this function will create new transfer client and attempts to connect 
+     * then it will send the first generated encryption key before it starts to send the files
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void btnConnect_Click(object sender, EventArgs e)
     {
         if (transferClient == null)
         {
+            key = null;
+            IV = null;
+            firstKey = null;
+            firstIV = null;
+            secondKey = null;
+            secondIV = null;
             //Create our new transfer client.
             //And attempt to connect
             transferClient = new TransferClient();
@@ -200,6 +223,11 @@ public partial class Main : Form
             transferClient = null;
         }
     }
+
+    /* this function will start the connection
+     * input: object sender, EventArgs e
+     * output: null
+     */
 
     private void connectCallback(object sender, string error)
     {
@@ -241,6 +269,10 @@ public partial class Main : Form
         transferClient.Stopped += transferClient_Stopped;
     }
 
+    /* this function will strop the transfer
+     * input: object sender, EventArgs e
+     * output: null
+     */
     void transferClient_Stopped(object sender, TransferQueue queue)
     {
         if (InvokeRequired)
@@ -252,6 +284,10 @@ public partial class Main : Form
         lstTransfers.Items[queue.ID.ToString()].Remove();
     }
 
+    /* this function will queue the file that needed to be send to another computer
+     * input: object sender, EventArgs e
+     * output: null
+     */
     void transferClient_Queued(object sender, TransferQueue queue)
     {
         if (InvokeRequired)
@@ -279,6 +315,10 @@ public partial class Main : Form
         }
     }
 
+    /* this function will change the file transfer progress bar
+     * input: object sender, EventArgs e
+     * output: null
+     */
     void transferClient_ProgressChanged(object sender, TransferQueue queue)
     {
         if (InvokeRequired)
@@ -291,6 +331,10 @@ public partial class Main : Form
         lstTransfers.Items[queue.ID.ToString()].SubItems[3].Text = queue.Progress + "%";
     }
 
+    /* this function will disconnect the two computers and reset the encryption keys and IVs
+     * input: object sender, EventArgs e
+     * output: null
+     */
     void transferClient_Disconnected(object sender, EventArgs e)
     {
         if (InvokeRequired)
@@ -338,11 +382,16 @@ public partial class Main : Form
         }
     }
 
+    /* This just plays a little sound to let us know a transfer completed.
+     * input: object sender, EventArgs e
+     * output: null
+     */
     void transferClient_Complete(object sender, TransferQueue queue)
     {
-        //This just plays a little sound to let us know a transfer completed.
         System.Media.SystemSounds.Asterisk.Play();
     }
+
+
 
     private void deregisterEvents()
     {
@@ -355,11 +404,19 @@ public partial class Main : Form
         transferClient.Stopped -= transferClient_Stopped;
     }
 
+    /* This updates the connection status.
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void setConnectionStatus(string connectedTo)
     {
         lblConnected.Text = "Connection: " + connectedTo;
     }
 
+    /* This start the server to wait for another clien tto try to connect
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void btnStartServer_Click(object sender, EventArgs e)
     {
         //We disabled the button, but lets just do a quick check
@@ -383,10 +440,24 @@ public partial class Main : Form
         }
     }
 
+    /* This just stop the server listen or connection.
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void btnStopServer_Click(object sender, EventArgs e)
     {
+
         if (!serverRunning)
             return;
+
+        //clearing aes key
+        key = null;
+        IV = null;
+        firstKey = null;
+        firstIV = null;
+        secondKey = null;
+        secondIV = null;
+
         //Close the client if its active.
         if (transferClient != null)
         {
@@ -407,9 +478,13 @@ public partial class Main : Form
         btnStopServer.Enabled = false;
     }
 
+    /* Loop and clear all complete or inactive transfers
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void btnClearComplete_Click(object sender, EventArgs e)
     {
-        //Loop and clear all complete or inactive transfers
+
         foreach (ListViewItem i in lstTransfers.Items)
         {
             TransferQueue queue = (TransferQueue)i.Tag;
@@ -421,9 +496,13 @@ public partial class Main : Form
         }
     }
 
+    /* Get a user defined save directory
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void btnOpenDir_Click(object sender, EventArgs e)
     {
-        //Get a user defined save directory
+
         using (FolderBrowserDialog fb = new FolderBrowserDialog())
         {
             if (fb.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -440,11 +519,15 @@ public partial class Main : Form
         }
     }
 
-    private void btnSendFile_Click(object sender, EventArgs e)
+    /* Get the user desired files to send and checks if they contain a virus and then send the file if it is not infected
+     * input: object sender, EventArgs e
+     * output: null
+     */
+    private async void btnSendFile_Click(object sender, EventArgs e)
     {
         if (transferClient == null)
             return;
-        //Get the user desired files to send
+        
         using (OpenFileDialog o = new OpenFileDialog())
         {
             o.Filter = "All Files (*.*)|*.*";
@@ -454,54 +537,112 @@ public partial class Main : Form
             {
                 foreach (string file in o.FileNames)
                 {
-                    //check file for virus
-                    bool isInfected = false;
-                    using (MD5 md5 = MD5.Create())
+                    byte[] fileBytes = File.ReadAllBytes(file);
+                    if (fileBytes.Length > 16000000)
                     {
-                        //string fileString = BitConverter.ToString(md5.ComputeHash(File.ReadAllBytes(file)).Replace("-", string.Empty).ToLower();
-                        string[] md5signatures = File.ReadAllLines("MD5base.txt");
-                        string fileString = File.ReadAllText(file);
-                        for (int i = 0; i < md5signatures.Length; i++)
-                        {
-
-                            if (fileString.Contains(md5signatures[i]))
-                            {
-                                // "Infected!";
-
-                                MessageBox.Show("File: "+file+"  is Infected!\n(can't send file if it is virus)");
-                                isInfected = true;
-                                i = md5signatures.Length;
-                            }
-                        }
-                        System.Threading.Thread.Sleep(1000);
-                        //else
-                        //{
-                        //   "Clean!";
-                        //   
-                        //}
+                        MessageBox.Show("this file: " + file + ". cannot be sent beacause it is larger the 16MB!\n if you want to send file that are equals and larger than 16MB Please use file transfer option instead...");
                     }
-                    if (!isInfected)
+                    else
                     {
-                        transferClient.QueueTransfer(file);
-                        sendStatistic(file);
+                        resultFromScan = "";
+                        //check file for virus
+                        bool isInfected = false;
+
+                        VirusTotal virusTotal = new VirusTotal("4f086d0dd58ae2502b57178ce50e4f9d7815f52b693a305b3981ecb5331ff97c");
+
+                        //Use HTTPS instead of HTTP
+                        virusTotal.UseTLS = true;
+
+                        //Create the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
+                        //byte[] eicar = Encoding.ASCII.GetBytes(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
+
+                        //Check if the file has been scanned before.
+                        FileReport fileReport;
+
+                        fileReport = await virusTotal.GetFileReportAsync(fileBytes);
+
+                        //catch
+                        //{
+                        //    // can only scan 4 files in one minute
+                        //    System.Threading.Thread.Sleep(60000);
+                        //    fileReport = await virusTotal.GetFileReportAsync(fileBytes);
+                        //}
+
+                        bool hasFileBeenScannedBefore = fileReport.ResponseCode == FileReportResponseCode.Present;
+
+                        Console.WriteLine("File has been scanned before: " + (hasFileBeenScannedBefore ? "Yes" : "No"));
+
+                        //If the file has been scanned before, the results are embedded inside the report.
+                        if (hasFileBeenScannedBefore)
+                        {
+                            PrintScan(fileReport);
+                        }
+                        else
+                        {
+                            if (fileBytes.Length <= 32000000)
+                            {
+                                ScanResult fileResult = await virusTotal.ScanFileAsync(fileBytes, Path.GetFileName(file));
+                                PrintScan(fileResult);
+                            }
+                            else
+                            {
+                                // it throw exception because file size is above what is permitted
+                                int i = 0;
+                                while (i < fileBytes.Length)
+                                {
+                                    byte[] bytes = new byte[32000];
+                                    Array.Copy(fileBytes, i, bytes, 0, 32000);
+                                    if (i == 0)
+                                    {
+                                        //System.Threading.Thread.Sleep(60000);
+                                    }
+                                    else
+                                    {
+                                        System.Threading.Thread.Sleep(21000);
+                                    }
+                                    ScanResult fileResult = await virusTotal.ScanFileAsync(bytes, Path.GetFileName(file));
+
+                                    PrintScan(fileResult);
+                                    if (resultFromScan.Contains("True"))
+                                    {
+                                        i = fileBytes.Length;
+                                        //break;
+                                    }
+                                    i = i + 32000;
+                                }
+                            }
+
+                        }
+
+                        Console.WriteLine();
+                        // if it founds true more than three times that means that the file is inficted
+                        //if (resultFromScan.Contains("True"))
+                        if (CountStringOccurrences(resultFromScan, "True") >= 3)
+                        {
+                            isInfected = true;
+                        }
+                        else
+                        {
+                            isInfected = false;
+                        }
+
+                        if (!isInfected)
+                        {
+                            transferClient.QueueTransfer(file);
+                        }
+                        else
+                        {
+                            MessageBox.Show("this file: " + file + ". cannot be sent because it is infected!!!");
+                        }
                     }
                 }
             }
         }
     }
-
-    public void sendStatistic(string file)
-    {
-        //Start of the statistic
-        string sendersIp = txtCntHost.Text; // the ip of the sender
-        string reciversIp = transferClient.EndPoint.Address.ToString();// the ip of the reciver
-        string fileType = file.Substring(file.IndexOf('.'));
-        string time = DateTime.Now.ToShortTimeString(); // the current time 
-        LogInScreen.MSG = Constants.STATISTIC_MSG + sendersIp.Length + sendersIp + reciversIp.Length + reciversIp + fileType.Length + fileType + time.Length + time;
-        LogInScreen.msgHandler();
-        //the end of the statstic 
-    }
-
+    /* puase the file data transfer
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void btnPauseTransfer_Click(object sender, EventArgs e)
     {
         if (transferClient == null)
@@ -514,6 +655,10 @@ public partial class Main : Form
         }
     }
 
+    /* stop and end the file data transfer
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void btnStopTransfer_Click(object sender, EventArgs e)
     {
         if (transferClient == null)
@@ -529,7 +674,10 @@ public partial class Main : Form
 
         progressOverall.Value = 0;
     }
-
+    /* when form is loaded change the ip to the computer corrent ip
+     * input: object sender, EventArgs e
+     * output: null
+     */
     private void Main_Load(object sender, EventArgs e)
     {
         //txtCntHost
@@ -544,5 +692,45 @@ public partial class Main : Form
                 txtCntHost.Text = localIp;
             }
         }
+    }
+
+    private static void PrintScan(ScanResult scanResult)
+    {
+        Console.WriteLine("Scan ID: " + scanResult.ScanId);
+        Console.WriteLine("Message: " + scanResult.VerboseMsg);
+        Console.WriteLine();
+        resultFromScan = scanResult.ScanId + scanResult.VerboseMsg;
+    }
+
+    private static void PrintScan(FileReport fileReport)
+    {
+        Console.WriteLine("Scan ID: " + fileReport.ScanId);
+        Console.WriteLine("Message: " + fileReport.VerboseMsg);
+
+        resultFromScan = fileReport.ScanId + fileReport.VerboseMsg;
+
+        if (fileReport.ResponseCode == FileReportResponseCode.Present)
+        {
+            foreach (KeyValuePair<string, ScanEngine> scan in fileReport.Scans)
+            {
+                Console.WriteLine("{0,-25} Detected: {1}", scan.Key, scan.Value.Detected);
+                resultFromScan = resultFromScan + "{0,-25} Detected: {1}" + scan.Key + scan.Value.Detected;
+            }
+        }
+
+        Console.WriteLine();
+    }
+
+    public int CountStringOccurrences(string text, string pattern)
+    {
+        // Loop through all instances of the string 'text'.
+        int count = 0;
+        int i = 0;
+        while ((i = text.IndexOf(pattern, i)) != -1)
+        {
+            i += pattern.Length;
+            count++;
+        }
+        return count;
     }
 }

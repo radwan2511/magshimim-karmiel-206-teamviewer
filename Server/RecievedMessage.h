@@ -5,6 +5,8 @@
 #include "User.h"
 #include <vector>
 #include <string>
+#include <winsock.h>
+#include <WinSock2.h>
 
 using std::string;
 
@@ -23,6 +25,6 @@ public:
 	void setUser(User* newUser);
 	int getMessageCode();
 	vector<string>& getValues();
-
+	void closeSocket();
 };
 

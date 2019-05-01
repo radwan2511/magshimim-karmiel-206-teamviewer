@@ -2,7 +2,6 @@
 #include <iostream>
 
 unordered_map<string, vector<string>> results;
-unordered_map<string, vector<string>> statistics;
 
 /*
 constructor for the dataBase
@@ -22,15 +21,11 @@ DataBase::DataBase()
 	}
 	_usernames.clear();
 	_passwords.clear();
-	_ipsFrom.clear();
-	_ipsTo.clear();
-	_files.clear();
-	_times.clear();
 	results.clear();
 
 	st = "select * from users";
 	rc = sqlite3_exec(_db, st.c_str(), callback, 0, &zErrMsg);
-
+	
 	size = results["username"].size();
 	for (int j = 0; j < size; j++)
 	{
@@ -40,77 +35,13 @@ DataBase::DataBase()
 	}
 
 	results.clear();
-	//gets the statistics
-
-	st = "select * from statistics";
-	rc = sqlite3_exec(_db, st.c_str(), statisticsCallback, 0, &zErrMsg);
-
-	size = statistics["From IP"].size();
-	for (int j = 0; j < size; j++)
-	{
-		_ipsFrom.emplace_back(statistics["From IP"][j]);
-		_ipsTo.emplace_back(statistics["To IP"][j]);
-		_files.emplace_back(statistics["File"][j]);
-		_times.emplace_back(statistics["Time"][j]);
-	}
-
-	statistics.clear();//clears the results
-
-
-
-
-}
-
-/*
-the function calls back the statistics
-input : void * notUsed, int argc, char ** argv, char ** azCol
-output: int
-*/
-int DataBase::statisticsCallback(void * notUsed, int argc, char ** argv, char ** azCol)
-{
-	int i;
-
-	for (i = 0; i < argc; i++)
-	{
-
-		auto it = statistics.find(azCol[i]);
-		if (it != statistics.end())
-		{
-			it->second.push_back(argv[i]);
-		}
-		else
-		{
-			pair<string, vector<string>> p;
-			p.first = azCol[i];
-
-			p.second.push_back(argv[i]);
-
-			statistics.insert(p);
-		}
-	}
-
-	return 0;
-}
-
-bool DataBase::addNewstatistic(string ip_from, string ip_to, string fileType, string time)
-{
-	string st = "INSERT INTO statistics (FromIP,ToIP,File,Time) VALUES ( '" + ip_from + "','" + ip_to + "','" + fileType + "','" + time + "')";
+	/*
+	st = "select * from password";
 	rc = sqlite3_exec(_db, st.c_str(), callback, 0, &zErrMsg);
-	if (rc != SQLITE_OK)
-	{
-		return false;
-	}
+	*/
+	results.clear();
 
-	_ipsFrom.emplace_back(ip_from);
-	_ipsTo.emplace_back(ip_to);
-	_files.emplace_back(fileType);
-	_times.emplace_back(time);
-
-	return true;
 }
-
-
-
 /*
 callback
 input : void * notUsed, int argc, char ** argv, char ** azCol
@@ -191,7 +122,7 @@ OUTPUT : bool - true if the user and password matchs and false if not
 bool DataBase::isUserAndPassMatch(string username, string password)
 {
 	int j = -1;
-	for (int i = 0; i < this->_usernames.capacity(); i++)
+	for (int i = 0; i < this->_usernames.size(); i++)
 	{
 		if (username == _usernames[i])
 		{

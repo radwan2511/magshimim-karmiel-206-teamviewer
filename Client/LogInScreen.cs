@@ -25,6 +25,11 @@ namespace client_ppp
         public static NetworkStream clientStream2 { get; set; }
         public static TcpClient client3 { get; set; }
         public static byte[] key { get; set; }
+        
+        /* run the log in form
+        * input: null
+        * output: null
+        */
         public LogInScreen()
         {
             InitializeComponent();
@@ -33,28 +38,40 @@ namespace client_ppp
             c.Start();
 
         }
-
+        /* try to connect to server and when connected send the first message
+        * input: null
+        * output: null
+        */
         private void serverConnection()
         {
             try
             {
-                //starts the connection
                 client = new TcpClient();
-                // change ip here
-                // ip for computer that runs the server on it
-                serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.91"), Constants.PORT);
-                client.Connect(serverEndPoint);
-                clientStream = client.GetStream();
+                while (!client.Connected)
+                {
+                    //starts the connection
+                    client = new TcpClient();
+                    // change ip here
+                    // ip for computer that runs the server on it
+                    serverEndPoint = new IPEndPoint(IPAddress.Parse("192.168.20.226"), Constants.PORT);
+                    client.Connect(serverEndPoint);
+                    clientStream = client.GetStream();
+                }
                 MSG = "";
                 sendMSG();
             }
             catch (Exception exception)
             {
                 MessageBox.Show(exception.Message);
-                Application.Exit();
+                serverConnection();
+                //Application.Exit();
             }
 
         }
+        /* send message to server
+        * input: null
+        * output: null
+        */
         public static void sendMSG()
         {
             try
@@ -69,6 +86,10 @@ namespace client_ppp
                 MessageBox.Show(exception.Message);
             }
         }
+        /* recive message from server
+        * input: null
+        * output: null
+        */
         public static void reciveMSG()
         {
             try
@@ -83,53 +104,20 @@ namespace client_ppp
                 MessageBox.Show(exception.Message);
             }
         }
+        /* send message and then recive a message from server
+        * input: null
+        * output: null
+        */
         public static void msgHandler()
         {
             sendMSG();
             reciveMSG();
         }
-        private static void sendTextFile()
-        {
-            try
-            {
-                //gets the path of the file 
-                string[] lines = System.IO.File.ReadAllLines(@"C:\Users\magshimim\Desktop\Teamviewer\TeamViewer - Client\info.txt");
-                foreach (string line in lines)
-                {
-                    MSG = MSG + line + "#";
-                    MSG = MSG.Remove(MSG.Length - 2, 1);
-                }
-                clientStream = client.GetStream();
-                byte[] buffer = new ASCIIEncoding().GetBytes(MSG);
-                clientStream.Write(buffer, 0, buffer.Length);
-                clientStream.Flush();
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show(exception.Message);
-            }
-        }
 
-        private static void reciveTextFile()
-        {
-            try
-            {
-                byte[] bufferIn = new byte[10000];
-                int bytesRead = clientStream.Read(bufferIn, 0, 10000);
-                RecivedMSG = new ASCIIEncoding().GetString(bufferIn);
-                RecivedMSG = RecivedMSG.Replace("\0", string.Empty);
-                string[] lines = RecivedMSG.Split('#');
-                int last = lines.Length - 1;
-                lines[last] = null;
-                System.IO.File.WriteAllLines(@"C:\Users\magshimim\Desktop\new.txt", lines);
-            }
-
-            catch (Exception exception)
-            {
-                MessageBox.Show(exception.Message);
-            }
-        }
-
+        /* try to log in to the project
+        * input: object sender, EventArgs 
+        * output: null
+        */
         private void LogInButton_Click(object sender, EventArgs e)
         {
             try
@@ -147,25 +135,22 @@ namespace client_ppp
                     msgHandler();
                     if (RecivedMSG == Constants.SUCCESS)
                     {
-                        //save_data();
+                        save_data();
                         this.Hide();
 
-                        //MSG = Constants.LOG_OUT;
-                        //byte[] buffer = new ASCIIEncoding().GetBytes(MSG);
-                        //clientStream.Write(buffer, 0, buffer.Length);
-                        //clientStream.Flush();
-                        //client.Close();
-
-
-                        //MainScreen Main = new MainScreen();
-                        //Main.Show();
-
-                        Option opt = new Option();
-                        opt.Show();
+                        Option opt = new Option(client);
+                        opt.ShowDialog();
+                        //this.Show();
                         ///////////////////////////////////////////////////////////////////////////
-
+                        this.Close();
 
                         //this.Show();
+                    }
+                    else if(RecivedMSG == Constants.NOT_REGISTERED)
+                    {
+                        //save_data();
+                        //this.Hide();
+                        MessageBox.Show("Username or Password is is incorrect!!!\nPlease Try Again...");
                     }
                 }
                 else if(usernameBox.Text == "" || passwordBox.Text == "")
@@ -180,6 +165,10 @@ namespace client_ppp
             }
         }
 
+        /* run the sign up form
+        * input: object sender, EventArgs 
+        * output: null
+        */
         private void SignUpButton_Click(object sender, EventArgs e)
         {
             this.Hide();
@@ -187,10 +176,14 @@ namespace client_ppp
             signUp.ShowDialog();
             this.Show();
         }
-        /*
+
+        /* checks if there is user data saved from remember me feature
+        * input: null 
+        * output: null
+        */
         private void Init_Data()
         {
-            if(Properties.Settings.Default.Username != string.Empty)
+            if (Properties.Settings.Default.Username != string.Empty)
             {
                 if (Properties.Settings.Default.Remember == "yes")
                 {
@@ -202,9 +195,13 @@ namespace client_ppp
                     usernameBox.Text = Properties.Settings.Default.Username;
                 }
             }
-            
+
         }
 
+        /* if user choose remember me feature this function will save his data
+        * input: null
+        * output: null
+        */
         private void save_data()
         {
             if (remeberBox.Checked)
@@ -216,11 +213,20 @@ namespace client_ppp
             }
             else
             {
-                Properties.Settings.Default.Username = usernameBox.Text;
+                Properties.Settings.Default.Username = "";
                 Properties.Settings.Default.Password = "";
                 Properties.Settings.Default.Remember = "no";
                 Properties.Settings.Default.Save();
             }
-        }*/
+        }
+
+        /* this function run when the log in form load
+        * input: object sender, EventArgs 
+        * output: null
+        */
+        private void LogInScreen_Load(object sender, EventArgs e)
+        {
+            Init_Data();
+        }
     }
 }

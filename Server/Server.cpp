@@ -102,8 +102,11 @@ void Server::clientHandler(SOCKET clientSocket)
 		try
 		{
 			MTC = Helper::getMessageTypeCode(clientSocket);
-			RecievedMessage* rcv = new RecievedMessage(clientSocket, MTC);
-			addRecievedMessage(rcv);
+			if (MTC != 0)
+			{
+				RecievedMessage* rcv = new RecievedMessage(clientSocket, MTC);
+				addRecievedMessage(rcv);
+			}
 
 		}
 		catch (...)
@@ -131,6 +134,7 @@ bool Server::handleLogIn(RecievedMessage * msg)
 			newUser = new User(vec[0], msg->getSock());
 			this->_connectedUsers.emplace(msg->getSock(), newUser);
 			msg->setUser(newUser);
+			return true;
 		}
 		else
 		{
@@ -139,10 +143,10 @@ bool Server::handleLogIn(RecievedMessage * msg)
 	}
 	else
 	{
-		Helper::sendData(msg->getSock(), "209");
+		Helper::sendData(msg->getSock(), "208");
 	}
 
-	return newUser;
+	return false;
 }
 
 /*
@@ -166,7 +170,7 @@ bool Server::handleSignUp(RecievedMessage * msg)
 			}
 			else
 			{
-				Helper::sendData(msg->getSock(), "209");//sends a failure that the user is'nt exists
+				Helper::sendData(msg->getSock(), "209");//sends a failure that the user is already exists
 			}
 		}
 		else
@@ -229,19 +233,21 @@ void Server::handleRecievedMessages()
 		{
 		case LOG_IN:
 			handleLogIn(_queRcvMessages.front());
-			cout << _queRcvMessages.front()->getUser()->getUsername() <<" signed in!" << endl;
+			if (_queRcvMessages.front()->getUser() != NULL)
+			{
+				cout << _queRcvMessages.front()->getUser()->getUsername() << " signed in!" << endl;
+			}
 			break;
 		case SIGN_OUT:
 			handleSignOut(_queRcvMessages.front());
 			cout << _queRcvMessages.front()->getUser()->getUsername() <<" Logged Out!!!" << endl;
+
 			break;
 		case SIGN_UP:
-			handleSignUp(_queRcvMessages.front());
-			cout << "We got a new user :D" << endl;
-			break;
-		case STATISTIC:
-			handleStatistic(_queRcvMessages.front());
-			cout << "The statistic was added" << endl;
+			if (handleSignUp(_queRcvMessages.front()))
+			{
+				cout << "We got a new user :D" << endl;
+			}
 			break;
 		default:
 			handleSignOut(_queRcvMessages.front());
@@ -269,26 +275,6 @@ void Server::addRecievedMessage(RecievedMessage * rcvMessage)
 	_cond.notify_one();
 
 
-}
-
-bool Server::handleStatistic(RecievedMessage * msg)
-{
-	Helper::sendData(msg->getSock(), "206");
-	vector<string> vec = msg->getValues();
-	string email_from = vec[0];
-	string email_to = vec[1];
-	string type = vec[2];
-	string time = vec[3];
-	if(_db.addNewstatistic(email_from,email_to,type,time))
-	{
-		cout << "statistic was added " << endl;
-		return true;
-	}
-	else
-	{
-		cout << "statistic was'nt added " << endl;
-		return false;
-	}
 }
 
 /*
@@ -348,6 +334,8 @@ void Server::handleSignOut(RecievedMessage * msg)
 {
 	if (msg->getUser() != nullptr)
 	{
+		//msg->closeSocket();
+		closesocket(msg->getSock());
 		this->_connectedUsers.erase(msg->getSock());
 	}
 

@@ -158,30 +158,40 @@ namespace client_ppp
         static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData,
            UIntPtr dwExtraInfo);
 
-        // added by radwan 27.2.2019
+
         [DllImport("user32")]
         public static extern int SetCursorPos(int x, int y);
 
         const int KEYEVENTF_KEYUP = 0x2;
         const int KEYEVENTF_EXTENDEDKEY = 0x1;
 
-        Socket mouse_klavyeDinleme = null;
-        byte[] dizi = new byte[2000];
-        // dizi bytes was 200
+        Socket mouseKeyboardListening = null;
+        byte[] sequence = new byte[2000];
+        
         private TextBox textBox1;
         private Label label1;
         private Label label2;
         private Button button1;
         private Button button2;
 
-        delegate void ResimGonderHandler();
-        string KarsiIP = "";
+        delegate void SendImageHandler();
+        string otherComputerIP = "";
+
+        private bool getFileData = false;
+        private int ind = 0;
+        private string fileName = "";
+        private int width = 0;
+        private int height = 0;
 
         public MainScreen()
         {
             InitializeComponent();
         }
 
+        /* when form is loaded change the lebel text to ip of this computer
+        * input: object sender, EventArgs 
+        * output: null
+        */
         private void frmServerAnaform_Load(object sender, EventArgs e)
         {
             //string host = Dns.GetHostName();
@@ -197,63 +207,109 @@ namespace client_ppp
                     lblIP.Text = localIp;
                 }
             }
-
-            //lblIP.Text = ip.AddressList[0].ToString();
-
-            // added by me
-            // change ip here
-            // ip for מחשב נשלט
-            //lblIP.Text = "10.68.83.85";
-            
-
-
-            //mouse_klavyeDinleme = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            ////mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(ip.AddressList[0].ToString()), 1453));
-            //mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(lblIP.Text), 1453));
-
-            //mouse_klavyeDinleme.Listen(1);
-
-
-            //mouse_klavyeDinleme.BeginAccept(new AsyncCallback(Baglandiginda), null);
         }
 
-
-        void Baglandiginda(IAsyncResult iar)
+        /* when connected wait for when data arrives
+        * input: IAsyncResult iar
+        * output: null
+        */
+        void whenConnected(IAsyncResult iar)
         {
-            Socket soket = mouse_klavyeDinleme.EndAccept(iar);
-            soket.BeginReceive(dizi, 0, dizi.Length, SocketFlags.None, new AsyncCallback(VeriGeldiginde), soket);
-            mouse_klavyeDinleme.BeginAccept(new AsyncCallback(Baglandiginda), null);
+            Socket soket = mouseKeyboardListening.EndAccept(iar);
+            soket.BeginReceive(sequence, 0, sequence.Length, SocketFlags.None, new AsyncCallback(whenDataArrives), soket);
+            mouseKeyboardListening.BeginAccept(new AsyncCallback(whenConnected), null);
         }
 
-        void VeriGeldiginde(IAsyncResult iar)
+       /* when data arrives check what is this data if this is mouse position then
+       * change the mouse position if it is keyboard key then apply it 
+       * input: IAsyncResult iar
+       * output: null
+       */
+        void whenDataArrives(IAsyncResult iar)
         {
             Socket soket = (Socket)iar.AsyncState;
-            int gelenVeriUzunluk = soket.EndReceive(iar);
-            byte[] veri = new byte[gelenVeriUzunluk];
-            Array.Copy(dizi, veri, veri.Length);
-            string islenecek = Encoding.UTF8.GetString(veri);
-            if (islenecek.Contains("AC"))
+            int incomingDataLength = soket.EndReceive(iar);
+            byte[] data = new byte[incomingDataLength];
+            Array.Copy(sequence, data, data.Length);
+            string execution = Encoding.UTF8.GetString(data);
+            if (execution.Contains("AC"))
             {
-                KarsiIP = islenecek.Substring(0, islenecek.IndexOf('|'));
+                otherComputerIP = execution.Substring(0, execution.IndexOf('|'));
                 DEVMODE dv = new DEVMODE();
                 EnumDisplaySettings(null, -1, ref dv);
-                string gonderilcek = dv.dmPelsWidth.ToString() + ":" + dv.dmPelsHeight.ToString() + "|";
+                string size = dv.dmPelsWidth.ToString() + ":" + dv.dmPelsHeight.ToString() + "|";
+                width = dv.dmPelsWidth;
+                height = dv.dmPelsHeight;
                 //string gonderilcek = "1280" + ":" + "720" + "|";
                 //if (dv.dmPelsWidth.ToString() < 1280)
 
-                ekranCozunurlukGonder(gonderilcek);
-                ResimGonderHandler resimGonder = new ResimGonderHandler(ResimGonder);
-                resimGonder.BeginInvoke(new AsyncCallback(islemsonlandi), null);
+                displayScreening(size);
+                SendImageHandler sendImage = new SendImageHandler(SendImage);
+                sendImage.BeginInvoke(new AsyncCallback(processEnded), null);
+            }
+            else if (execution.Contains("DragNDrop"))
+            {
+                //Thread reciveFile = new Thread(new ThreadStart(getFile));
+                //reciveFile.Start();
+                string outputFolder = "Transfers";
+                string index = "";
+                int read = 0;
+                //byte[] fileData = new byte[1500];
+                byte[] fileData = new byte[Constants.FILE_DATA_SIZE];
+                string del = "|DragNDrop";
+                execution = execution.Replace(del, "");
+                if (execution == "EndOfFile")
+                {
+                    getFileData = false;
+                    ind = 0;
+                }
+                else if (getFileData)
+                {
+                    FileStream fs = new FileStream(Path.Combine(outputFolder, fileName), FileMode.Open);
+                    index = execution.Substring(0, execution.IndexOf(':')); //getting index
+                    //fs.Position = Convert.ToInt64(index);
+                    read = int.Parse(execution.Substring(execution.IndexOf(':') + 1, execution.IndexOf('|') - execution.IndexOf(':') - 1));
+                    del = index + ":" + read.ToString() + "|";
+                    execution = execution.Replace(del, "");
+
+                    fileData = Encoding.ASCII.GetBytes(execution);
+
+                    lock (this)
+                    {
+                        fs.Position = ind;
+                        fs.Write(fileData, 0, fileData.Length);
+                        //fs.Write(fileData, 0, read);
+                    }
+                    ind = ind + fileData.Length;
+                    fs.Close();
+                }
+                else if (execution != null)
+                {
+
+                    //string outputFolder = "Transfers";
+                    fileName = execution.Substring(0, execution.IndexOf(':'));
+                    int fileSize = int.Parse(execution.Substring(execution.IndexOf(':') + 1, execution.IndexOf('|') - execution.IndexOf(':') - 1));
+                    del = fileName + ":" + fileSize.ToString() + "|";
+                    execution = execution.Replace(del, "");
+
+                    FileStream fs = new FileStream(Path.Combine(outputFolder, fileName), FileMode.Create);
+                    fs.SetLength(fileSize);
+
+                    fs.Close();
+                    getFileData = true;
+                }
+
+
             }
             else
             {
                 // to set the real 
                 //int aa = Screen.PrimaryScreen.Bounds.Height - 1280 + 16;
                 //int bb = Screen.PrimaryScreen.Bounds.Height - 720 + 38;
-                if (islenecek.Contains("MouseMove"))
+                if (execution.Contains("MouseMove"))
                 {
-                    int x = int.Parse(islenecek.Substring(0, islenecek.IndexOf(':')));
-                    int y = int.Parse(islenecek.Substring(islenecek.IndexOf(':') + 1, islenecek.IndexOf('|') - islenecek.IndexOf(':') - 1));
+                    int x = int.Parse(execution.Substring(0, execution.IndexOf(':')));
+                    int y = int.Parse(execution.Substring(execution.IndexOf(':') + 1, execution.IndexOf('|') - execution.IndexOf(':') - 1));
                     ////x = x + aa;
                     ////y = y + bb;
                     //x = x + 16;
@@ -261,54 +317,64 @@ namespace client_ppp
                     //Cursor.Position = new Point(x, y);
                     SetCursorPos(x, y);
                 }
-                else if (islenecek.Contains("MouseDown"))
+                else if (execution.Contains("MouseDown"))
                 {
-                    string a = islenecek.Substring(0, islenecek.IndexOf(':'));
+                    string a = execution.Substring(0, execution.IndexOf(':'));
                     if (a == "Left")
                         mouse_event((uint)MouseEventFlags.LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
                     else
                         mouse_event((uint)MouseEventFlags.RIGHTDOWN, 0, 0, 0, UIntPtr.Zero);
                 }
-                else if (islenecek.Contains("MouseUp"))
+                else if (execution.Contains("MouseUp"))
                 {
-                    string a = islenecek.Substring(0, islenecek.IndexOf(':'));
+                    string a = execution.Substring(0, execution.IndexOf(':'));
                     if (a == "Left")
                         mouse_event((uint)MouseEventFlags.LEFTUP, 0, 0, 0, UIntPtr.Zero);
                     else
                         mouse_event((uint)MouseEventFlags.RIGHTUP, 0, 0, 0, UIntPtr.Zero);
                 }
-                else if (islenecek.Contains("Key"))
+                else if (execution.Contains("Key"))
                 {
 
-                    byte tusKodu = byte.Parse(islenecek.Substring(0, islenecek.IndexOf(':')));
+                    byte tusKodu = byte.Parse(execution.Substring(0, execution.IndexOf(':')));
                     keybd_event(tusKodu, 0x45, KEYEVENTF_EXTENDEDKEY, UIntPtr.Zero);
                 }
             }
         }
 
-        void ekranCozunurlukGonder(string gonderilcek)
+       /* this funciton send display size/resulotion
+       * input: string toBeSent
+       * output: null
+       */
+        void displayScreening(string toBeSent)
         {
-            Socket baglan = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            baglan.Connect(IPAddress.Parse(KarsiIP), 1453);
-            byte[] coz = Encoding.UTF8.GetBytes(gonderilcek);
-            baglan.Send(coz, 0, coz.Length, SocketFlags.None);
-            baglan.Close();
+            Socket connect = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //connect.Connect(IPAddress.Parse(otherComputerIP), 1453);
+            connect.Connect(IPAddress.Parse(otherComputerIP), Constants.REMOTE_PORT);
+            byte[] solve = Encoding.UTF8.GetBytes(toBeSent);
+            connect.Send(solve, 0, solve.Length, SocketFlags.None);
+            connect.Close();
         }
-
-        void ResimGonder()
+        /* this funciton send the screenshot image 
+       * input: null
+       * output: null
+       */
+        void SendImage()
         {
             while (true)
             {
-                Socket baglan = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                baglan.Connect(IPAddress.Parse(KarsiIP), 1453);
-                byte[] ekran = EkranGoruntusu();
-                baglan.Send(ekran, 0, ekran.Length, SocketFlags.None);
-                baglan.Close();
+                Socket connect = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                connect.Connect(IPAddress.Parse(otherComputerIP), Constants.REMOTE_PORT);
+                byte[] screen = Screenshot();
+                connect.Send(screen, 0, screen.Length, SocketFlags.None);
+                connect.Close();
             }
-
         }
-
-        byte[] EkranGoruntusu()
+        /* this funciton screenshot and save it as image in memory stream then compress it and return the bytes
+       * input: null
+       * output: compressed screntshot bytes
+       */
+        byte[] Screenshot()
         {
             // #1
             //Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
@@ -342,7 +408,10 @@ namespace client_ppp
 
             // compress
 
-            Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            
+
+            //Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            Bitmap bmp = new Bitmap(width, height);
             Graphics gr = Graphics.FromImage(bmp);
             gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
             //compress
@@ -372,64 +441,27 @@ namespace client_ppp
 
         }
 
-        void islemsonlandi(IAsyncResult iar)
+        /* this run when the process ends
+       * input: IAsyncResult iar
+       * output: null
+       */
+        void processEnded(IAsyncResult iar)
         {
         }
 
-        //private void InitializeComponent()
-        //{
-        //    this.textBox1 = new System.Windows.Forms.TextBox();
-        //    this.label1 = new System.Windows.Forms.Label();
-        //    this.button1 = new System.Windows.Forms.Button();
-        //    this.SuspendLayout();
-        //    // 
-        //    // textBox1
-        //    // 
-        //    this.textBox1.Location = new System.Drawing.Point(88, 166);
-        //    this.textBox1.Name = "textBox1";
-        //    this.textBox1.Size = new System.Drawing.Size(100, 20);
-        //    this.textBox1.TabIndex = 0;
-        //    // 
-        //    // label1
-        //    // 
-        //    this.label1.AutoSize = true;
-        //    this.label1.Location = new System.Drawing.Point(37, 169);
-        //    this.label1.Name = "label1";
-        //    this.label1.Size = new System.Drawing.Size(48, 13);
-        //    this.label1.TabIndex = 1;
-        //    this.label1.Text = "Enter IP:";
-        //    // 
-        //    // button1
-        //    // 
-        //    this.button1.Location = new System.Drawing.Point(197, 164);
-        //    this.button1.Name = "button1";
-        //    this.button1.Size = new System.Drawing.Size(56, 23);
-        //    this.button1.TabIndex = 3;
-        //    this.button1.Text = "Connect";
-        //    this.button1.UseVisualStyleBackColor = true;
-        //    this.button1.Click += new System.EventHandler(this.button1_Click);
-        //    // 
-        //    // MainScreen
-        //    // 
-        //    this.ClientSize = new System.Drawing.Size(284, 261);
-        //    this.Controls.Add(this.button1);
-        //    this.Controls.Add(this.label2);
-        //    this.Controls.Add(this.label1);
-        //    this.Controls.Add(this.textBox1);
-        //    this.Name = "MainScreen";
-        //    this.ResumeLayout(false);
-        //    this.PerformLayout();
 
-        //}
-
+        /* this let the user to be the one who controlls the other computer and run the conrollers remote screen form
+       * input: object sender, EventArgs e
+       * output: null
+       */
         private void button1_Click(object sender, EventArgs e)
         {
             button2.Enabled = false;
             RemoteScreen screen = new RemoteScreen(textBox1.Text);
-            screen.Show();
+            screen.ShowDialog();
 
             // here need to return after we finish what we selected
-            this.Hide();
+            this.Close();
         }
 
         //private void InitializeComponent()
@@ -456,19 +488,21 @@ namespace client_ppp
 
         //}
 
+        /* give the permission to other users to controll this computer and waits for an connection
+         * input: object sender, EventArgs e
+         * output: null
+         */
         private void button2_Click(object sender, EventArgs e)
         {
-            button1.Enabled = false;
-            mouse_klavyeDinleme = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            //mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(ip.AddressList[0].ToString()), 1453));
-            mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(lblIP.Text), 1453));
+                button1.Enabled = false;
+                mouseKeyboardListening = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                //mouse_klavyeDinleme.Bind(new IPEndPoint(IPAddress.Parse(ip.AddressList[0].ToString()), 1453));
+                mouseKeyboardListening.Bind(new IPEndPoint(IPAddress.Parse(lblIP.Text), Constants.REMOTE_PORT));
 
-            mouse_klavyeDinleme.Listen(1);
+                mouseKeyboardListening.Listen(1);
 
 
-            mouse_klavyeDinleme.BeginAccept(new AsyncCallback(Baglandiginda), null);
-
-            //this.Hide();
+                mouseKeyboardListening.BeginAccept(new AsyncCallback(whenConnected), null);
         }
     }
 }

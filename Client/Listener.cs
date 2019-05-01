@@ -8,24 +8,27 @@ using System.Net;
 
     internal class SocketAcceptedEventArgs : EventArgs
     {
+        // accept the connection
         public Socket Accepted
         {
             get;
             private set;
         }
-
+        
+        // address
         public IPAddress Address
         {
             get;
             private set;
         }
-
+        // ip
         public IPEndPoint EndPoint
         {
             get;
             private set;
         }
 
+        // this function accept the socket connection
         public SocketAcceptedEventArgs(Socket sck)
         {
             Accepted = sck;
@@ -61,12 +64,17 @@ using System.Net;
 
         public event SocketAcceptedHandler Accepted;
 
+        // build the listner class
         public Listener()
         {
 
         }
 
-        public void Start(int port)
+    /* start the listing on the chosen port
+     * input: int port
+     * output: null
+     */
+    public void Start(int port)
         {
             if (_running)
                 return;
@@ -79,6 +87,10 @@ using System.Net;
             _socket.BeginAccept(acceptCallback, null);
         }
 
+        /* stop the connection
+         * input: null
+         * output: null
+         */
         public void Stop()
         {
             if (!_running)
@@ -88,7 +100,11 @@ using System.Net;
             _socket.Close();
         }
 
-        private void acceptCallback(IAsyncResult ar)
+    /* accept the connection
+     * input: IAsyncResult ar
+     * output: null
+     */
+    private void acceptCallback(IAsyncResult ar)
         {
             try
             {
